@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.pytest_cache/
+*.egg-info/
+.DS_Store
+faiss_index/
+*.faiss
+.chainlit/
