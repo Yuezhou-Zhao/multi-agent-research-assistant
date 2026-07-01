@@ -114,3 +114,17 @@ def new_job_state(
         node_latencies={},
         messages=[],
     )
+
+
+def llm_call_update(state: AcademicResearchState, calls: int = 1) -> dict:
+    """Shared accounting for Section 2.2's global LLM budget: every node
+    that invokes an LLM should merge this into its own partial update so
+    total_llm_calls / llm_budget_exceeded stay correct for
+    route_after_critic and route_after_context_eval (Section 4.6), which
+    only read these fields — they don't compute them.
+    """
+    new_total = state["total_llm_calls"] + calls
+    return {
+        "total_llm_calls": new_total,
+        "llm_budget_exceeded": new_total >= state["max_llm_calls"],
+    }

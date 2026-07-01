@@ -13,7 +13,7 @@ from backend.graph import (
     route_after_critic,
     route_after_supervisor,
 )
-from backend.state import new_job_state
+from backend.state import llm_call_update, new_job_state
 
 
 def base_state(**overrides):
@@ -151,3 +151,38 @@ class TestGraphTopology:
         global cap is set to 15 so force_finalize fires one step early."""
         state = base_state(max_llm_calls=15)
         assert state["max_llm_calls"] < 16
+
+
+class TestLLMCallUpdate:
+    """Shared budget-accounting helper every LLM-calling node uses."""
+
+    def test_increments_total_calls(self):
+        state = base_state(total_llm_calls=3, max_llm_calls=15)
+        update = llm_call_update(state)
+        assert update["total_llm_calls"] == 4
+
+    def test_defaults_to_incrementing_by_one(self):
+        state = base_state(total_llm_calls=0, max_llm_calls=15)
+        update = llm_call_update(state)
+        assert update["total_llm_calls"] == 1
+
+    def test_supports_multi_call_increments(self):
+        state = base_state(total_llm_calls=0, max_llm_calls=15)
+        update = llm_call_update(state, calls=3)
+        assert update["total_llm_calls"] == 3
+
+    def test_sets_budget_exceeded_at_exact_cap(self):
+        state = base_state(total_llm_calls=14, max_llm_calls=15)
+        update = llm_call_update(state)
+        assert update["total_llm_calls"] == 15
+        assert update["llm_budget_exceeded"] is True
+
+    def test_budget_not_exceeded_below_cap(self):
+        state = base_state(total_llm_calls=5, max_llm_calls=15)
+        update = llm_call_update(state)
+        assert update["llm_budget_exceeded"] is False
+
+    def test_only_returns_relevant_keys(self):
+        state = base_state(total_llm_calls=0, max_llm_calls=15)
+        update = llm_call_update(state)
+        assert set(update.keys()) == {"total_llm_calls", "llm_budget_exceeded"}
