@@ -1,44 +1,44 @@
-"""Writer — draft the answer with inline citations (Section 2.1 diagram).
+"""Writer — draft the answer with index-based citations (Section 2.1 diagram).
 
-Reads verified_chunks (the Gamma-filtered evidence pool that came out of
-merge_results -> context_eval -> maybe refine) and produces an answer
-that cites each supporting chunk by its `source` id in [id] brackets.
-The Critic's rule-based citation grounding (evaluation/citation_check.py)
-enforces this bracket format, so we tell the LLM about it explicitly.
+Design decision (see Section 4.8 of the design doc): Writer cites by
+1-based INDEX into the presented chunk list — [1], [2], [3] — never by
+raw arXiv id. A deterministic post-processing step in finalizer_node
+resolves those indices back to real arXiv ids/URLs for the user-visible
+final_answer. Rationale, in one sentence: confabulating specific
+identifiers under pressure to "know" one is a well-documented LLM
+failure mode, so we remove the failure mode instead of tuning around it.
+Full writeup + measured baseline in Section 4.8.
 
-On rollback (Critic sent us back with critic_feedback set), the previous
-draft is included and the feedback is prepended — this is the "error
-context injected on rollback" line in Section 2.1's Critic node box.
-Without it, a rerun would produce the same draft and rollback forever.
+The LLM's job becomes "which of these N sources supports this sentence?"
+— structurally impossible to cite something that doesn't exist because
+the whitelist is 1..N and check_citations can just do a range check.
+
+On rollback (Critic set critic_feedback), the previous draft is included
+and a rollback-temperature LLM is used so the retry actually explores a
+different phrasing.
 """
 from langchain_openai import ChatOpenAI
 
 from backend.state import AcademicResearchState, llm_call_update
 
-LLM_MODEL = "gpt-4o-mini"
+LLM_MODEL = "gpt-4o-mini"  # Section 2.2 cost model
 
 
 class WriterAgent:
-    # Prompt hardened after measuring that gpt-4o-mini in the Writer role
-    # will happily generate plausible-looking arxiv IDs (2305.17306v1,
-    # 2402.00559v4, etc.) that don't exist in the source pool despite
-    # a generic "do not invent citations" instruction. Fix: enumerate the
-    # legal IDs explicitly at prompt end and repeat the constraint at
-    # both the top and bottom of the message. Empirically this brings
-    # the dangling-citation rate way down; the Critic's L2 grounding
-    # check still catches whatever slips through.
-    BASE_PROMPT = """You are an academic research writer. Answer the user's query using ONLY the provided source excerpts. Every sentence must cite at least one source using the exact `[source_id]` format shown below.
+    BASE_PROMPT = """You are an academic research writer. Answer the user's query using ONLY the numbered source excerpts below. Every sentence must cite at least one source using the exact `[N]` format, where N is the source's number (1..{n_sources}).
 
 Query: {query}
 
-Sources (cite by the id in [square brackets]):
+Sources:
 {sources}
 
 STRICT CITATION RULES:
-- The ONLY valid citation ids are: {valid_ids}
-- You MUST copy these ids exactly, character-for-character. Do NOT invent, guess, or modify any id.
+- Cite ONLY by source number, in square brackets: [1], [2], ..., [{n_sources}].
+- Valid source numbers are: {valid_numbers}. Any other number is invalid.
+- To cite multiple sources for one sentence, use separate brackets: "... [1] [3]." NOT "[1, 3]" or "[1,3]".
+- Never write an arXiv id, URL, author name, or year inside the brackets.
 - If you cannot support a claim from the sources above, do not make the claim.
-- Every sentence must end with at least one [source_id] citation.
+- Every sentence must end with at least one [N] citation.
 - Write 4-8 complete sentences.
 - Do NOT include a header, title, or trailing bibliography — just the answer paragraph.
 """
@@ -68,11 +68,12 @@ You MUST produce a substantively different draft this time. Do not lightly rewor
         )
 
     def _format_sources(self, chunks: list[dict]) -> str:
+        """Number sources 1..N so the LLM cites by index, not by raw id."""
         lines = []
-        for c in chunks:
+        for i, c in enumerate(chunks, start=1):
             title = c.get("title") or ""
             title_prefix = f"{title} — " if title else ""
-            lines.append(f"[{c['source']}] {title_prefix}{c['content']}")
+            lines.append(f"[{i}] {title_prefix}{c['content']}")
         return "\n\n".join(lines)
 
     async def write(
@@ -82,11 +83,13 @@ You MUST produce a substantively different draft this time. Do not lightly rewor
         previous_draft: str = "",
         critic_feedback: str | None = None,
     ) -> str:
-        valid_ids = ", ".join(f"[{c['source']}]" for c in chunks)
+        n = len(chunks)
+        valid_numbers = ", ".join(str(i) for i in range(1, n + 1)) if n else "(none)"
         prompt = self.BASE_PROMPT.format(
             query=query,
             sources=self._format_sources(chunks),
-            valid_ids=valid_ids,
+            n_sources=n,
+            valid_numbers=valid_numbers,
         )
         llm = self.llm
         if critic_feedback:

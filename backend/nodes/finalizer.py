@@ -10,39 +10,35 @@ cap — in both cases we still return whatever the last draft was, since
 degradation signaling.
 
 Both nodes are zero-LLM.
+
+Section 4.8: the draft coming in uses 1-based `[N]` markers indexing
+into merged_chunks. resolve_citations() rewrites them to real
+`[source_id]` markers for the user-visible final_answer, and returns
+the ordered id list for the citations panel. Doing the resolution here
+(rather than in Critic) means the internal draft flowing between graph
+nodes stays index-based, so all the guardrail/L2 checks compare against
+one consistent representation.
 """
-import re
-
 from backend.state import AcademicResearchState
-
-_CITATION_RE = re.compile(r"\[([^\[\]]+)\]")
-
-
-def _extract_citations(draft: str) -> list[str]:
-    """Deduped, order-preserving citation ids extracted from the draft's
-    [id] markers — useful for the UI's citation panel (Section 5.1 /
-    Chainlit, Week 6)."""
-    seen = set()
-    ordered = []
-    for match in _CITATION_RE.findall(draft):
-        cid = match.strip()
-        if cid and cid not in seen:
-            seen.add(cid)
-            ordered.append(cid)
-    return ordered
+from evaluation.citation_check import resolve_citations
 
 
 def finalize_node(state: AcademicResearchState) -> dict:
     draft = state["draft"]
+    merged_chunks = state.get("merged_chunks") or state.get("verified_chunks", [])
+    resolved, ordered_ids = resolve_citations(draft, merged_chunks)
     return {
-        "final_answer": draft,
-        "citations": _extract_citations(draft),
+        "final_answer": resolved,
+        "citations": ordered_ids,
         "status": "approved",
     }
 
 
 def force_finalize_node(state: AcademicResearchState) -> dict:
     draft = state.get("draft", "")
+    merged_chunks = state.get("merged_chunks") or state.get("verified_chunks", [])
+    resolved, ordered_ids = resolve_citations(draft, merged_chunks)
+
     if state["llm_budget_exceeded"]:
         reason = "budget_exceeded"
         status = "budget_exceeded"
@@ -51,8 +47,8 @@ def force_finalize_node(state: AcademicResearchState) -> dict:
         status = "force_finalized"
 
     return {
-        "final_answer": draft,
-        "citations": _extract_citations(draft),
+        "final_answer": resolved,
+        "citations": ordered_ids,
         "status": status,
         "failure_reason": reason,
     }

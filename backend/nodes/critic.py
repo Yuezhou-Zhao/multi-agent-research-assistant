@@ -40,7 +40,7 @@ Query: {query}
 Draft:
 {draft}
 
-Cited source excerpts (id -> content):
+Cited source excerpts (numbered as they appear in the draft):
 {citations}
 
 Reject if: the draft makes claims not supported by the cited excerpts,
@@ -53,8 +53,15 @@ misrepresents a cited source, or omits a critical aspect of the query."""
             model_kwargs={"response_format": {"type": "json_object"}},
         )
 
-    async def judge(self, query: str, draft: str, cited_chunks: list[dict]) -> dict:
-        citations = "\n\n".join(f"[{c['source']}] {c['content']}" for c in cited_chunks)
+    async def judge(
+        self, query: str, draft: str, indexed_cited_chunks: list[tuple[int, dict]]
+    ) -> dict:
+        """indexed_cited_chunks is (1-based-index, chunk) so the judge sees
+        the same [N] format the draft uses — matches Section 4.8's
+        index-based citation architecture."""
+        citations = "\n\n".join(
+            f"[{i}] {c['content']}" for i, c in indexed_cited_chunks
+        )
         response = await self.llm.ainvoke(
             self.JUDGE_PROMPT.format(query=query, draft=draft, citations=citations)
         )
@@ -141,8 +148,15 @@ async def critic_node(state: AcademicResearchState) -> dict:
     sanitized_draft = citation_report.sanitized_draft or draft
 
     # ── Layer 3: LLM judge (only if L1+L2 both passed) ─────────────────
-    cited_chunks = [c for c in merged_chunks if c["source"] in citation_report.cited_source_ids]
-    verdict = await _get_default_agent().judge(state["query"], sanitized_draft, cited_chunks)
+    # Judge sees chunks with the same 1-based [N] labels the Writer used
+    # in the draft (Section 4.8) — otherwise it can't map "[3]" in the
+    # draft to any specific evidence.
+    indexed_cited_chunks = [
+        (i, merged_chunks[i - 1])
+        for i in sorted(citation_report.cited_indices)
+        if 1 <= i <= len(merged_chunks)
+    ]
+    verdict = await _get_default_agent().judge(state["query"], sanitized_draft, indexed_cited_chunks)
     approved = bool(verdict.get("approved"))
     return {
         **base_update,
