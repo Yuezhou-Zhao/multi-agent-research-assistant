@@ -1,62 +1,26 @@
-"""LangGraph orchestrator — topology skeleton + routing/circuit-breaker logic.
+"""LangGraph orchestrator — topology + routing/circuit-breaker logic.
 
-Week 1 scope (Section 7.2): the graph topology is wired up and the three
-routing functions below (Section 4.6 / 4.1) are final, fully tested logic.
-Most node bodies are still placeholders — real node logic (Planner,
-sub-agent tool use, Writer, Critic cascade, etc.) lands in
-`backend/nodes/*.py` across later weeks per Section 7.1/7.2.
-context_eval_node (Week 3, Section 4.5) and supervisor_node /
-merge_results_node (Week 4, Section 4.1) are real, imported from
-backend/nodes/*.py; the rest remain no-op stubs so the graph compiles and
-its topology can be verified now.
-
-The HyDE pre-flight operator (Section 4.3) is intentionally NOT a node in
-this graph — per Section 2.1 it runs once, outside the state machine,
-before the graph is invoked, and its output is frozen into
-state["search_payload"].
+All node bodies are real as of Week 5 (Section 7.2) — this module is now
+purely the wiring layer between them plus the three routing functions
+(Section 4.6 / 4.1). Node logic lives in backend/nodes/*.py; the HyDE
+pre-flight operator (Section 4.3) is intentionally NOT a node here — per
+Section 2.1 it runs once, outside the state machine, before the graph is
+invoked, with its output frozen into state["search_payload"] by
+backend/main.py.
 """
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
+from backend.nodes.arxiv_agent import arxiv_agent_node
 from backend.nodes.context_eval import context_eval_node
+from backend.nodes.critic import critic_node
+from backend.nodes.finalizer import finalize_node, force_finalize_node
+from backend.nodes.planner import planner_node
+from backend.nodes.refine import refine_node
 from backend.nodes.supervisor import merge_results_node, supervisor_node
+from backend.nodes.web_agent import web_agent_node
+from backend.nodes.writer import writer_node
 from backend.state import AcademicResearchState
-
-
-# ── Node placeholders (real logic lands in backend/nodes/*.py, Week 5) ──
-# Each stub is a no-op that returns no state update. They exist only to let
-# the graph topology compile and be exercised in tests.
-
-def planner_node(state: AcademicResearchState) -> dict:
-    return {}
-
-
-def arxiv_agent_node(state: AcademicResearchState) -> dict:
-    return {}
-
-
-def web_agent_node(state: AcademicResearchState) -> dict:
-    return {}
-
-
-def refine_node(state: AcademicResearchState) -> dict:
-    return {}
-
-
-def writer_node(state: AcademicResearchState) -> dict:
-    return {}
-
-
-def critic_node(state: AcademicResearchState) -> dict:
-    return {}
-
-
-def finalize_node(state: AcademicResearchState) -> dict:
-    return {}
-
-
-def force_finalize_node(state: AcademicResearchState) -> dict:
-    return {}
 
 
 # ── Routing functions (Section 4.6 / 4.1) — final logic, fully tested ──────
