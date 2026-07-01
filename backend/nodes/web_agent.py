@@ -32,13 +32,16 @@ TOOLS = [tavily_search_tool, url_scraper_tool]
 
 
 async def web_agent_node(state: AcademicResearchState) -> dict:
+    # NOTE: no `status` write in this node — see arxiv_agent.py's note.
+    # Both sub-agents fire concurrently via Send; only one can write to a
+    # LastValue channel per superstep. status is owned by sequential nodes.
     try:
         results = await tavily_search_tool(state["query"], max_results=5)
     except Exception as exc:
         # Section 6 Tier 2: Tavily failure -> warn + continue with arxiv-
         # only. Empty web_chunks is a valid degraded state, not a failure.
         log.warning("Web sub-agent Tavily call failed, degrading to empty results: %s", exc)
-        return {"web_chunks": [], "status": "researching_web"}
+        return {"web_chunks": []}
 
     chunks = [
         {
@@ -48,4 +51,4 @@ async def web_agent_node(state: AcademicResearchState) -> dict:
         }
         for r in results
     ]
-    return {"web_chunks": chunks, "status": "researching_web"}
+    return {"web_chunks": chunks}

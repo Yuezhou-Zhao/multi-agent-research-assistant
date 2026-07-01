@@ -49,9 +49,14 @@ def _get_retriever() -> TwoStageRetriever:
 def _get_guardrail() -> GammaGuardrail:
     global _guardrail
     if _guardrail is None:
-        from evaluation.gamma_guardrail import build_default_guardrail
+        # Chunk-specific calibration (abstracts): what filter_chunks
+        # actually scores here is retrieved chunk content, which lives
+        # in the same distribution as raw abstracts. See
+        # evaluation/gamma_guardrail.py's build_sentence_guardrail
+        # docstring for why the Critic uses a different calibration.
+        from evaluation.gamma_guardrail import build_chunk_guardrail
 
-        _guardrail, _ = build_default_guardrail()
+        _guardrail, _ = build_chunk_guardrail()
     return _guardrail
 
 
@@ -78,8 +83,12 @@ async def arxiv_agent_node(state: AcademicResearchState) -> dict:
     ]
 
     verified, scores = guardrail.filter_chunks(raw_chunks, state["sf_threshold"])
+    # NOTE: no `status` write here. Both this node and web_agent_node fire
+    # concurrently via the Send fan-out in graph.py, and LangGraph's default
+    # LastValue reducer on the `status` channel rejects writes from >1 node
+    # in the same superstep (InvalidUpdateError). status transitions are
+    # owned by sequential nodes only (supervisor/writer/critic/finalize).
     return {
         "arxiv_chunks": verified,
         "gamma_scores": scores,
-        "status": "researching_arxiv",
     }

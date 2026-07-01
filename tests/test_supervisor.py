@@ -118,7 +118,12 @@ class TestMergeResultsNode:
         result = merge_results_node(state)
         assert result["merged_chunks"] == []
 
-    def test_only_returns_merged_chunks_key(self):
+    def test_returns_merged_chunks_and_status(self):
+        """merge_results is the fan-in point after the ArXiv/Web Send
+        dispatch, so it owns the researching -> context_eval status
+        transition (the sub-agents can't safely write status; they run
+        concurrently and would clash on the LastValue channel)."""
         state = base_state(arxiv_chunks=[{"content": "a"}], web_chunks=[])
         result = merge_results_node(state)
-        assert set(result.keys()) == {"merged_chunks"}
+        assert set(result.keys()) == {"merged_chunks", "status"}
+        assert result["status"] == "context_eval"

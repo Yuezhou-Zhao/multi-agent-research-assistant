@@ -29,6 +29,10 @@ How it works:
      abstracts; arXiv's API doesn't expose citation counts, so this
      project calibrates on real arXiv abstracts from the indexed corpus
      as a proxy — documented here rather than silently substituted.
+     build_default_guardrail() further augments that with Writer-style
+     synthesized-and-cited exemplars — an empirically-driven addition
+     after abstracts-only calibration drove 100% force_finalized across
+     a diagnostic batch; see that function's docstring for details.
   2. survival_score(texts) embeds new text, computes its distance to that
      same centroid, and evaluates the fitted Gamma's survival function
      (SF = 1 - CDF) at that distance. A distance typical of the reference
@@ -158,9 +162,14 @@ class GammaGuardrail:
         return [s for s in _SENTENCE_SPLIT_RE.split(text.strip()) if s]
 
 
-def build_default_guardrail() -> GammaGuardrail:
-    """Calibrate a GammaGuardrail on the real indexed arXiv corpus
-    (rag/indexer.py's abstracts) rather than a synthetic reference set."""
+def build_chunk_guardrail() -> tuple["GammaGuardrail", dict]:
+    """Chunk-filtering guardrail — used by arxiv_agent.filter_chunks().
+
+    Calibrated on raw arXiv abstracts. Input distribution here matches:
+    a "chunk" is a paper title + abstract snippet, written in the
+    declarative "We introduce X. X achieves Y." style abstracts use, no
+    citation markers.
+    """
     from rag.indexer import load_index
 
     _, metadata = load_index()
@@ -171,13 +180,58 @@ def build_default_guardrail() -> GammaGuardrail:
     return guardrail, stats_
 
 
+def build_sentence_guardrail() -> tuple["GammaGuardrail", dict]:
+    """Sentence-scoring guardrail — used by critic.score_and_route().
+
+    Calibrated on Writer-style exemplars (transition-heavy synthesized
+    prose with [source_id] citation markers), split into sentences.
+    Input distribution here matches: a Writer draft sentence.
+
+    Why separate from build_chunk_guardrail: measured with a pooled
+    calibration (abstracts + 50 exemplars), abstracts still dominated
+    the centroid and left Writer output near the reject band — a
+    5-query diagnostic batch showed 68% of sentences rejected and 0/5
+    "approved" outcomes. Two call sites, two input distributions, two
+    calibrations. Both keep the spec's cascade thresholds (0.05/0.25).
+
+    Why sentence-split, not paragraph-level: an earlier version calibrated
+    on the 50 raw paragraph exemplars, but paragraph embeddings differ
+    from sentence embeddings (a whole paragraph averages closer to
+    corpus centroid than any one of its sentences). That produced a very
+    tight Gamma fit (scale=0.008, std=0.035) that rejected real
+    sentence-level Writer output. Splitting exemplars into their
+    constituent sentences fixes the granularity mismatch.
+    """
+    from evaluation.writer_style_calibration import load_exemplars
+
+    paragraphs = load_exemplars()
+    reference_texts: list[str] = []
+    for para in paragraphs:
+        reference_texts.extend(GammaGuardrail._split_sentences(para))
+
+    guardrail = GammaGuardrail()
+    stats_ = guardrail.calibrate(reference_texts)
+    return guardrail, stats_
+
+
+def build_default_guardrail() -> tuple["GammaGuardrail", dict]:
+    """Backwards-compatible alias for build_chunk_guardrail — kept so
+    older code paths and the module __main__ block keep working. New
+    callers should pick the specific one that matches their input.
+    """
+    return build_chunk_guardrail()
+
+
 if __name__ == "__main__":
     import time
 
     from scipy import stats as scipy_stats
 
-    guardrail, calib_stats = build_default_guardrail()
-    print(f"Calibrated: {calib_stats}")
+    chunk_g, chunk_stats = build_chunk_guardrail()
+    sent_g, sent_stats = build_sentence_guardrail()
+    print(f"chunk_guardrail calibrated: {chunk_stats}")
+    print(f"sentence_guardrail calibrated: {sent_stats}")
+    guardrail, calib_stats = chunk_g, chunk_stats
 
     test_sentences = [
         "Retrieval-augmented generation combines a retriever with a language model to ground outputs in external documents.",

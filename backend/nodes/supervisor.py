@@ -62,6 +62,13 @@ async def supervisor_node(state: AcademicResearchState) -> dict:
 
 def merge_results_node(state: AcademicResearchState) -> dict:
     """Fan-in after the ArXiv/Web Send dispatch: concatenate whatever each
-    independent sub-agent wrote to its own state slice. Zero LLM calls."""
+    independent sub-agent wrote to its own state slice. Zero LLM calls.
+
+    This is also where the researching -> context_eval status transition
+    is written, since the sub-agents themselves can't safely touch
+    `status` (they run concurrently via Send; LastValue channels only
+    accept one write per superstep). merge_results runs after fan-in,
+    sequentially, so it can.
+    """
     merged = state.get("arxiv_chunks", []) + state.get("web_chunks", [])
-    return {"merged_chunks": merged}
+    return {"merged_chunks": merged, "status": "context_eval"}

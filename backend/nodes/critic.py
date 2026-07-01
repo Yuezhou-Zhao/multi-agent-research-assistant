@@ -75,9 +75,16 @@ def _get_default_agent() -> CriticAgent:
 def _get_guardrail() -> GammaGuardrail:
     global _guardrail
     if _guardrail is None:
-        from evaluation.gamma_guardrail import build_default_guardrail
+        # Sentence-specific calibration (Writer-style exemplars): what
+        # score_and_route scores here is Writer's synthesized-and-cited
+        # prose, which lives in a different distribution than raw
+        # abstracts. Using the abstract-calibrated guardrail here caused
+        # 100% force_finalized on a 5-query diagnostic batch; see
+        # evaluation/gamma_guardrail.py's build_sentence_guardrail
+        # docstring for the full trail.
+        from evaluation.gamma_guardrail import build_sentence_guardrail
 
-        _guardrail, _ = build_default_guardrail()
+        _guardrail, _ = build_sentence_guardrail()
     return _guardrail
 
 
@@ -92,21 +99,35 @@ async def critic_node(state: AcademicResearchState) -> dict:
     # ── Layer 1: Gamma sentence scorer ────────────────────────────────
     guardrail = _get_guardrail()
     cascade_decisions, mean_sf = guardrail.score_and_route(draft, state["sf_threshold"])
-    l1_rejected = "reject" in cascade_decisions
+    reject_count = cascade_decisions.count("reject")
+    l1_rejected = reject_count > len(cascade_decisions) / 2  # majority-reject
+    # Policy note: Section 4.7's code lists per-sentence decisions but
+    # doesn't specify how to combine them into a draft-level verdict.
+    # Original implementation used "any reject -> rollback"; measured on a
+    # 5-query batch that rejected 100% of drafts (30% reject rate per
+    # sentence * 5-7 sentences per draft -> always >= 1 reject). Switched
+    # to majority-reject so L1 only auto-rollbacks when Gamma is
+    # confidently negative overall; minority rejects still escalate the
+    # whole draft to L3 (LLM judge), which was the point of L3 existing.
+    # llm_calls_avoided still increments when L1 short-circuits — that's
+    # the Section 5.1 metric.
     if l1_rejected:
-        # Any single "reject" is enough to send us back — cheap, no LLM.
         return {
             **base_update,
             "cascade_decisions": cascade_decisions,
             "status": "reviewing",
             "critic_feedback": (
-                f"Gamma guardrail flagged {cascade_decisions.count('reject')} sentence(s) "
+                f"Gamma guardrail flagged {reject_count}/{len(cascade_decisions)} sentences "
                 f"as likely-hallucinated (SF < {GammaGuardrail.CERTAIN_WRONG})."
             ),
             "llm_calls_avoided": state["llm_calls_avoided"] + 1,
         }
 
     # ── Layer 2: citation grounding ────────────────────────────────────
+    # check_citations strips dangling [X] markers as a repair pass (see
+    # evaluation/citation_check.py). On pass, downstream sees the
+    # sanitized draft; on fail, we still roll back to Writer with feedback
+    # listing what was hallucinated so the retry has a chance to converge.
     citation_report = check_citations(draft, merged_chunks)
     if not citation_report.passed:
         return {
@@ -117,12 +138,15 @@ async def critic_node(state: AcademicResearchState) -> dict:
             "llm_calls_avoided": state["llm_calls_avoided"] + 1,
         }
 
+    sanitized_draft = citation_report.sanitized_draft or draft
+
     # ── Layer 3: LLM judge (only if L1+L2 both passed) ─────────────────
     cited_chunks = [c for c in merged_chunks if c["source"] in citation_report.cited_source_ids]
-    verdict = await _get_default_agent().judge(state["query"], draft, cited_chunks)
+    verdict = await _get_default_agent().judge(state["query"], sanitized_draft, cited_chunks)
     approved = bool(verdict.get("approved"))
     return {
         **base_update,
+        "draft": sanitized_draft,
         "cascade_decisions": cascade_decisions,
         "status": "approved" if approved else "reviewing",
         "critic_feedback": None if approved else f"LLM judge rejected: {verdict.get('reason', '')}",
