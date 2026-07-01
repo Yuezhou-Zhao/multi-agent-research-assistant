@@ -2,10 +2,12 @@
 
 Week 1 scope (Section 7.2): the graph topology is wired up and the three
 routing functions below (Section 4.6 / 4.1) are final, fully tested logic.
-Every node body is a placeholder — real node logic (Planner, Supervisor
-classification, sub-agent tool use, Writer, Critic cascade, etc.) lands in
-`backend/nodes/*.py` in later weeks per Section 7.1/7.2. Node stubs exist
-here only so the graph compiles and its topology can be verified now.
+Most node bodies are still placeholders — real node logic (Planner,
+Supervisor classification, sub-agent tool use, Writer, Critic cascade,
+etc.) lands in `backend/nodes/*.py` across later weeks per Section 7.1/7.2.
+context_eval_node is real as of Week 3 (Section 4.5) and imported from
+backend/nodes/context_eval.py; the rest remain no-op stubs so the graph
+compiles and its topology can be verified now.
 
 The HyDE pre-flight operator (Section 4.3) is intentionally NOT a node in
 this graph — per Section 2.1 it runs once, outside the state machine,
@@ -15,10 +17,11 @@ state["search_payload"].
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
+from backend.nodes.context_eval import context_eval_node
 from backend.state import AcademicResearchState
 
 
-# ── Node placeholders (real logic lands in backend/nodes/*.py, Weeks 3-5) ──
+# ── Node placeholders (real logic lands in backend/nodes/*.py, Weeks 4-5) ──
 # Each stub is a no-op that returns no state update. They exist only to let
 # the graph topology compile and be exercised in tests.
 
@@ -39,10 +42,6 @@ def web_agent_node(state: AcademicResearchState) -> dict:
 
 
 def merge_results_node(state: AcademicResearchState) -> dict:
-    return {}
-
-
-def context_eval_node(state: AcademicResearchState) -> dict:
     return {}
 
 

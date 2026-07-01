@@ -13,6 +13,9 @@ rank-bm25>=0.2.2
 FlagEmbedding>=1.2.0        # BGE-reranker-v2-m3
 sentence-transformers>=2.7.0
 pymupdf4llm>=0.0.5
+# FlagEmbedding 1.4.0's reranker calls a tokenizer API (prepare_for_model)
+# that transformers>=5.0 removed; pinned below or FlagReranker crashes.
+transformers==4.46.3
 
 # External APIs
 arxiv>=2.1.0

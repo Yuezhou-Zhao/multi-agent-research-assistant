@@ -72,6 +72,10 @@ def build_index(papers: list[dict], index_dir: Path = INDEX_DIR) -> dict:
     metadata = {
         "embedding_model": EMBEDDING_MODEL,
         "child_order": [cid for cid, _, _ in child_records],
+        # child_texts is aligned with child_order — needed by the BM25 leg
+        # of TwoStageRetriever (rag/retriever.py), which must run over the
+        # exact same chunks the FAISS leg was built from.
+        "child_texts": texts,
         "parent_store": chunker.parent_store,
         "child_to_parent": chunker.child_to_parent,
         "paper_by_id": {p["id"]: p for p in papers},
