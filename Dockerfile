@@ -24,6 +24,7 @@ COPY backend/ ./backend/
 COPY rag/ ./rag/
 COPY evaluation/ ./evaluation/
 COPY frontend/ ./frontend/
+COPY scripts/ ./scripts/
 COPY entrypoint.sh ./
 RUN chmod +x ./entrypoint.sh
 
