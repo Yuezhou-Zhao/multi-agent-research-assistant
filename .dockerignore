@@ -1,0 +1,35 @@
+# Never ship secrets into an image layer. Compose passes .env in via
+# env_file: at run time, not build time.
+.env
+.env.*
+
+# Local Python state
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+
+# Regenerable artifacts — mounted from host or rebuilt on startup
+index/
+faiss_index/
+*.faiss
+
+# Git + editor cruft
+.git/
+.gitignore
+.DS_Store
+.vscode/
+.idea/
+
+# Tests + local-only helpers we don't want in production images
+tests/
+scratchpad/
+
+# Docs / design (fine to include, but they only add MB to the layer)
+Multi-agent*.pdf
+
+# Chainlit local state
+.chainlit/
+.files/

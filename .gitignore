@@ -9,3 +9,5 @@ faiss_index/
 *.faiss
 index/
 .chainlit/
+chainlit.md
+.files/

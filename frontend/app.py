@@ -19,13 +19,22 @@ Four pieces the design doc calls out:
 
 Launch: `./venv/bin/chainlit run frontend/app.py -w` from repo root.
 """
+import sys
 import uuid
+from pathlib import Path
+
+# Chainlit executes this file with its own directory on sys.path, not
+# the repo root, so `from backend.graph import ...` would fail. Prepend
+# the repo root before any project-local import.
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import chainlit as cl
 from chainlit.input_widget import Slider, Switch
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(_REPO_ROOT / ".env")
 
 from backend.graph import compiled_graph
 from backend.nodes.preflight import HyDEOperator
@@ -105,25 +114,33 @@ def _cascade_counts(decisions: list[str]) -> tuple[int, int, int]:
     )
 
 
-def _highlight_cascade(draft: str, decisions: list[str]) -> str:
-    """Wrap L1-rejected sentences in a red-tinted HTML span. Chainlit
-    renders Markdown + inline HTML, so span backgrounds work."""
+def _highlight_cascade(draft: str, decisions: list[str]) -> tuple[str, int]:
+    """Mark L1-rejected sentences with a 🚩 prefix + bold-italic wrap so
+    they stand out in the final message. Returns (marked_text, n_flagged).
+
+    Rendering note: Chainlit 2.x sanitizes inline HTML in messages
+    (`<span style=...>` shows up as literal text), so we can't use a
+    CSS background color. Emoji + Markdown emphasis is the strongest
+    signal Chainlit's Markdown renderer passes through untouched, and
+    it visually distinguishes flagged sentences without breaking the
+    paragraph flow the way blockquotes would.
+    """
     sentences = GammaGuardrail._split_sentences(draft)
     if not sentences or len(decisions) != len(sentences):
         # Sanitization can strip citation markers; if the sentence count
         # diverges from the cascade recorded pre-sanitize, don't try to
         # misalign highlights — just show the draft plain.
-        return draft
+        return draft, 0
+
     parts = []
+    n_flagged = 0
     for sent, decision in zip(sentences, decisions):
         if decision == "reject":
-            parts.append(
-                f'<span style="background-color: #ff6b6b40; border-radius: 3px; '
-                f'padding: 0 3px;">{sent}</span>'
-            )
+            n_flagged += 1
+            parts.append(f"🚩 ***{sent}***")
         else:
             parts.append(sent)
-    return " ".join(parts)
+    return " ".join(parts), n_flagged
 
 
 def _metrics_markdown(state: dict) -> str:
@@ -302,10 +319,10 @@ async def main(message: cl.Message):
 
             await refresh_metrics()
 
-    # ── 3. Final answer with red-highlighted L1 rejects ────────────────
+    # ── 3. Final answer with L1-rejected sentences marked ─────────────
     final_answer = state.get("final_answer", "")
     cascade = state.get("cascade_decisions") or []
-    highlighted = _highlight_cascade(final_answer, cascade)
+    highlighted, n_flagged = _highlight_cascade(final_answer, cascade)
     citations = state.get("citations") or []
 
     status = state.get("status", "?")
@@ -319,9 +336,17 @@ async def main(message: cl.Message):
     reason = state.get("failure_reason")
     reason_line = f"\n\n_reason: {reason}_" if reason else ""
 
+    legend = (
+        f"\n\n> 🚩 = Gamma L1 flagged as likely-hallucinated "
+        f"(SF < {GammaGuardrail.CERTAIN_WRONG}). {n_flagged} of "
+        f"{len(cascade)} sentences flagged."
+        if n_flagged
+        else ""
+    )
+
     await cl.Message(
         content=(
-            f"### {header}{reason_line}\n\n"
+            f"### {header}{reason_line}{legend}\n\n"
             f"{highlighted or '(no draft produced)'}\n\n"
             f"---\n"
             f"**Citations:** {', '.join(citations) or '—'}"
