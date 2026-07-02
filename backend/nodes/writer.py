@@ -13,6 +13,16 @@ The LLM's job becomes "which of these N sources supports this sentence?"
 — structurally impossible to cite something that doesn't exist because
 the whitelist is 1..N and check_citations can just do a range check.
 
+Section 4.9 update: 4.8 stopped fabricated IDs but did NOT stop *citation
+misattribution* — a structurally-valid [N] pointing at a paper whose
+content doesn't support the specific claim being made. n=10 labeling
+found this in 36/65 sentences. Two-part fix: this file's BASE_PROMPT
+adds an explicit grounding rule ("do NOT describe methods from your
+pretrained knowledge and then cite whichever chunk has a plausible
+title"), and critic.py adds a zero-LLM embedding-similarity check
+between each cited sentence and its cited chunk's text. See Section 4.9
+for the full trail.
+
 On rollback (Critic set critic_feedback), the previous draft is included
 and a rollback-temperature LLM is used so the retry actually explores a
 different phrasing.
@@ -37,10 +47,16 @@ STRICT CITATION RULES:
 - Valid source numbers are: {valid_numbers}. Any other number is invalid.
 - To cite multiple sources for one sentence, use separate brackets: "... [1] [3]." NOT "[1, 3]" or "[1,3]".
 - Never write an arXiv id, URL, author name, or year inside the brackets.
-- If you cannot support a claim from the sources above, do not make the claim.
 - Every sentence must end with at least one [N] citation.
 - Write 4-8 complete sentences.
 - Do NOT include a header, title, or trailing bibliography — just the answer paragraph.
+
+CRITICAL GROUNDING RULE (this is more important than the citation rules above):
+- Every specific technical claim you attach a citation to — method names, algorithm descriptions, benchmark scores, dataset names, numeric results — MUST appear in the cited chunk's text as shown above.
+- Do NOT describe methods from your own pretrained knowledge. The base model likely knows many of these papers (e.g. FG-PRM, CoNLI, FLARE, HyDE), but that memory is unreliable for citation-attaching: describing what you *think* a paper says and then citing whichever nearby source has a plausible-looking title is worse than a citation-free sentence.
+- If a chunk describes method X, cite it for claims about X. Do NOT use that chunk as a citation for method Y from your training data just because Y is in the same subfield.
+- If no chunk supports the specific detail you want to include, either (a) omit the specific detail and stay general to what the chunks actually say, or (b) drop the sentence entirely. Never invent a link between a claim and a chunk.
+- When in doubt, quote or paraphrase directly from the cited chunk rather than synthesizing from memory.
 """
 
     FEEDBACK_ADDENDUM = """

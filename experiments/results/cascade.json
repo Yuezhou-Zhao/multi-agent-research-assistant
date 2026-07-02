@@ -2,59 +2,63 @@
   {
     "query": "How does HyDE improve retrieval-augmented generation for academic papers?",
     "status": "approved",
-    "critic_loop_count": 2,
+    "critic_loop_count": 3,
     "cascade_decisions": [
       "escalate",
       "approve",
+      "reject",
+      "reject",
       "approve",
-      "approve",
-      "escalate",
-      "reject"
+      "reject",
+      "approve"
     ],
-    "final_answer": "HyDE enhances retrieval-augmented generation (RAG) for academic papers by adopting a heterogeneous approach to knowledge representation during retrieval and generation phases. This decoupling allows the use of short, contextually rich knowledge chunks to improve the retrieval accuracy while simultaneously addressing the specific requirements of the generation process [2403.15450v1] [2602.07739v2]. Additionally, the framework incorporates an adaptive prompt tuning method, which tailors the retrieval model for better alignment with the needs of the generation step, thereby improving the efficiency of the overall process [2403.15450v1]. \n\nBy minimizing the semantic gap between large language models (LLMs) and retrievers, HyDE ensures that the information retrieved is more relevant and better integrated into the generation phase, thus enhancing the coherence and factual consistency of the output [2207.03030v1] [2606.28358v1]. Furthermore, frameworks like LoRAG highlight the importance of iterative refinement in RAG, demonstrating that continued engagement with retrieved information can further elevate the quality of generated text [2411.16133v2]. Overall, these innovations suggest that HyDE significantly advances the capabilities of RAG systems in producing high-quality academic content [2403.15450v1] [2411.16133v2].",
+    "final_answer": "HyDE improves retrieval-augmented generation (RAG) by implementing a heterogeneous framework that decouples the representations of knowledge chunks for retrieval and generation, which enhances large language models (LLMs) in both effectiveness and efficiency [2406.13249v2]. This approach allows the use of short chunks for generation, which are more suitable for the generative process, while simultaneously employing comprehensive contextual information to boost retrieval accuracy [2406.13249v2]. Traditional RAG methods often utilize identical representations for both retrieval and generation, leading to suboptimal performance due to excessive redundancy in contextual information [2406.13249v2][2403.15450v1]. By addressing this redundancy, HyDE optimizes the retrieval process and enhances the coherence and relevance of the generated outputs, which is crucial in academic contexts [2404.07220v2]. Furthermore, the framework incorporates an adaptive prompt tuning method for the retrieval model, facilitating a more tailored and dynamic interaction with retrieved information [2406.13249v2][2403.15450v1]. The significant performance improvements demonstrated in experimental findings validate HyDE's effectiveness over existing RAG baselines, marking it as a notable advancement in the generation of academic papers [2406.13249v2][2404.07220v2]. Overall, HyDE\u2019s innovative approach to decoupling knowledge representations positions it as a promising solution in the realm of retrieval-augmented generation [2406.13249v2].",
     "citations": [
+      "2406.13249v2",
       "2403.15450v1",
-      "2602.07739v2",
-      "2207.03030v1",
-      "2606.28358v1",
-      "2411.16133v2"
+      "2404.07220v2"
     ],
     "coverage_score": 0.8339045643806458,
-    "total_llm_calls": 8,
-    "llm_calls_avoided": 0,
+    "total_llm_calls": 10,
+    "llm_calls_avoided": 1,
     "per_sentence": [
       {
-        "sentence": "HyDE enhances retrieval-augmented generation (RAG) for academic papers by adopting a heterogeneous approach to knowledge representation during retrieval and generation phases.",
-        "sf": 0.16023575068381668,
-        "gamma_decision": "escalate"
-      },
-      {
-        "sentence": "This decoupling allows the use of short, contextually rich knowledge chunks to improve the retrieval accuracy while simultaneously addressing the specific requirements of the generation process [2403.15450v1] [2602.07739v2].",
-        "sf": 0.5077811556977627,
+        "sentence": "HyDE improves retrieval-augmented generation (RAG) by implementing a heterogeneous framework that decouples the representations of knowledge chunks for retrieval and generation, which enhances large language models (LLMs) in both effectiveness and efficiency [2406.13249v2].",
+        "sf": 0.29309510370331726,
         "gamma_decision": "approve"
       },
       {
-        "sentence": "Additionally, the framework incorporates an adaptive prompt tuning method, which tailors the retrieval model for better alignment with the needs of the generation step, thereby improving the efficiency of the overall process [2403.15450v1].",
-        "sf": 0.32574474383379215,
+        "sentence": "This approach allows the use of short chunks for generation, which are more suitable for the generative process, while simultaneously employing comprehensive contextual information to boost retrieval accuracy [2406.13249v2].",
+        "sf": 0.4943059242886211,
         "gamma_decision": "approve"
       },
       {
-        "sentence": "By minimizing the semantic gap between large language models (LLMs) and retrievers, HyDE ensures that the information retrieved is more relevant and better integrated into the generation phase, thus enhancing the coherence and factual consistency of the output [2207.03030v1] [2606.28358v1].",
-        "sf": 0.4195583541934127,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "Furthermore, frameworks like LoRAG highlight the importance of iterative refinement in RAG, demonstrating that continued engagement with retrieved information can further elevate the quality of generated text [2411.16133v2].",
-        "sf": 0.10854199699353334,
-        "gamma_decision": "escalate"
-      },
-      {
-        "sentence": "Overall, these innovations suggest that HyDE significantly advances the capabilities of RAG systems in producing high-quality academic content [2403.15450v1] [2411.16133v2].",
-        "sf": 0.0026842023515907306,
+        "sentence": "Traditional RAG methods often utilize identical representations for both retrieval and generation, leading to suboptimal performance due to excessive redundancy in contextual information [2406.13249v2][2403.15450v1].",
+        "sf": 0.03772254367764124,
         "gamma_decision": "reject"
+      },
+      {
+        "sentence": "By addressing this redundancy, HyDE optimizes the retrieval process and enhances the coherence and relevance of the generated outputs, which is crucial in academic contexts [2404.07220v2].",
+        "sf": 0.03824900383693256,
+        "gamma_decision": "reject"
+      },
+      {
+        "sentence": "Furthermore, the framework incorporates an adaptive prompt tuning method for the retrieval model, facilitating a more tailored and dynamic interaction with retrieved information [2406.13249v2][2403.15450v1].",
+        "sf": 0.474853414249362,
+        "gamma_decision": "approve"
+      },
+      {
+        "sentence": "The significant performance improvements demonstrated in experimental findings validate HyDE's effectiveness over existing RAG baselines, marking it as a notable advancement in the generation of academic papers [2406.13249v2][2404.07220v2].",
+        "sf": 0.007396599129370666,
+        "gamma_decision": "reject"
+      },
+      {
+        "sentence": "Overall, HyDE\u2019s innovative approach to decoupling knowledge representations positions it as a promising solution in the realm of retrieval-augmented generation [2406.13249v2].",
+        "sf": 0.8846611815587052,
+        "gamma_decision": "approve"
       }
     ],
-    "elapsed_s": 53.1
+    "elapsed_s": 64.8
   },
   {
     "query": "What is the attention mechanism in transformer models?",
@@ -62,541 +66,502 @@
     "critic_loop_count": 1,
     "cascade_decisions": [
       "escalate",
-      "approve",
+      "escalate",
       "approve",
       "reject",
-      "escalate",
       "reject"
     ],
-    "final_answer": "The attention mechanism in transformer models is a critical component that allows the model to weigh the importance of different tokens in the input sequence when generating outputs. This mechanism operates by distributing attention across various tokens, enabling the model to focus on relevant parts of the input while ignoring less pertinent information [2411.09111v8]. Recent advancements have introduced sparse attention mechanisms, which optimize the attention process by concentrating on a limited number of relevant tokens, thereby reducing computational costs and improving efficiency [2604.10697v1] [2311.04589v3]. Additionally, attention sinks have been identified as significant indicators of model behavior, particularly in detecting hallucinations, as they highlight tokens that receive disproportionate attention during generation [2501.09997v3]. The interplay between attention mechanisms and chain-of-thought reasoning has also been explored, revealing that these mechanisms can enhance the expressivity and performance of transformers in complex reasoning tasks [2312.12141v4]. Overall, the attention mechanism is fundamental to the functionality of transformer models, influencing both their performance and computational efficiency [2312.00249v2] [2411.16133v2].",
+    "final_answer": "The attention mechanism in transformer models is a critical component that allows these models to weigh the importance of different tokens in a sequence when generating outputs. This mechanism can be understood as a distributed, multi-stage process involving attention heads and MLP layers, which collectively contribute to the model's ability to focus on relevant information while processing input data [2604.10697v1]. Additionally, variations of attention mechanisms, such as sparse attention, have been proposed to optimize reasoning costs by concentrating on a limited number of relevant tokens, thereby improving efficiency in tasks like chain of thought reasoning [2501.09997v3] [2606.21821v1]. The attention mechanism also plays a role in detecting hallucinations in large language models, where attention sinks\u2014tokens that attract disproportionate attention\u2014can indicate a shift from input-grounded attention to prior-dominated computation [2403.15450v1]. Overall, the attention mechanism is fundamental to the performance and capabilities of transformer models, influencing both their reasoning processes and their ability to manage computational overhead [2507.02200v1] [2312.00249v2].",
     "citations": [
-      "2411.09111v8",
       "2604.10697v1",
-      "2311.04589v3",
       "2501.09997v3",
-      "2312.12141v4",
-      "2312.00249v2",
-      "2411.16133v2"
+      "2606.21821v1",
+      "2403.15450v1",
+      "2507.02200v1",
+      "2312.00249v2"
     ],
-    "coverage_score": 0.71723473072052,
+    "coverage_score": 0.7168112397193909,
     "total_llm_calls": 5,
     "llm_calls_avoided": 0,
     "per_sentence": [
       {
-        "sentence": "The attention mechanism in transformer models is a critical component that allows the model to weigh the importance of different tokens in the input sequence when generating outputs.",
-        "sf": 0.20505201118408645,
+        "sentence": "The attention mechanism in transformer models is a critical component that allows these models to weigh the importance of different tokens in a sequence when generating outputs.",
+        "sf": 0.23905462266838992,
         "gamma_decision": "escalate"
       },
       {
-        "sentence": "This mechanism operates by distributing attention across various tokens, enabling the model to focus on relevant parts of the input while ignoring less pertinent information [2411.09111v8].",
-        "sf": 0.12172743042666247,
+        "sentence": "This mechanism can be understood as a distributed, multi-stage process involving attention heads and MLP layers, which collectively contribute to the model's ability to focus on relevant information while processing input data [2604.10697v1].",
+        "sf": 0.14224997533413955,
         "gamma_decision": "escalate"
       },
       {
-        "sentence": "Recent advancements have introduced sparse attention mechanisms, which optimize the attention process by concentrating on a limited number of relevant tokens, thereby reducing computational costs and improving efficiency [2604.10697v1] [2311.04589v3].",
-        "sf": 0.6485083043600799,
+        "sentence": "Additionally, variations of attention mechanisms, such as sparse attention, have been proposed to optimize reasoning costs by concentrating on a limited number of relevant tokens, thereby improving efficiency in tasks like chain of thought reasoning [2501.09997v3] [2606.21821v1].",
+        "sf": 0.4110734585337667,
         "gamma_decision": "approve"
       },
       {
-        "sentence": "Additionally, attention sinks have been identified as significant indicators of model behavior, particularly in detecting hallucinations, as they highlight tokens that receive disproportionate attention during generation [2501.09997v3].",
-        "sf": 0.0025875839530952165,
+        "sentence": "The attention mechanism also plays a role in detecting hallucinations in large language models, where attention sinks\u2014tokens that attract disproportionate attention\u2014can indicate a shift from input-grounded attention to prior-dominated computation [2403.15450v1].",
+        "sf": 0.03081067507089525,
         "gamma_decision": "reject"
       },
       {
-        "sentence": "The interplay between attention mechanisms and chain-of-thought reasoning has also been explored, revealing that these mechanisms can enhance the expressivity and performance of transformers in complex reasoning tasks [2312.12141v4].",
-        "sf": 0.3537542985833355,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "Overall, the attention mechanism is fundamental to the functionality of transformer models, influencing both their performance and computational efficiency [2312.00249v2] [2411.16133v2].",
-        "sf": 0.03398287794629083,
+        "sentence": "Overall, the attention mechanism is fundamental to the performance and capabilities of transformer models, influencing both their reasoning processes and their ability to manage computational overhead [2507.02200v1] [2312.00249v2].",
+        "sf": 0.04475015352454616,
         "gamma_decision": "reject"
       }
     ],
-    "elapsed_s": 11.2
+    "elapsed_s": 15.3
   },
   {
     "query": "How does chain of thought reasoning improve language model performance?",
     "status": "approved",
-    "critic_loop_count": 1,
-    "cascade_decisions": [
-      "reject",
-      "escalate",
-      "escalate",
-      "approve",
-      "reject",
-      "approve",
-      "approve"
-    ],
-    "final_answer": "Chain of Thought (CoT) reasoning enhances language model performance by encouraging step-by-step logical reasoning, which significantly improves the ability to tackle complex tasks [2406.09136v2] [2509.00190v2]. This method allows models to generate a series of intermediate reasoning steps, leading to better performance on various reasoning benchmarks, including arithmetic and commonsense tasks [2509.00190v2]. Additionally, the introduction of frameworks like Flow Chain of Thought (Flow CoT) enables recursive inference, refining cognitive states across iterations without the need for extensive pretraining [2406.09136v2]. Furthermore, leveraging reasoning patterns can enhance CoT prompting by selecting diverse demonstrations that mitigate noise and improve interpretability [2502.12134v2]. The effectiveness of CoT is also supported by the Representation-of-Thought (RoT) framework, which enhances robustness and control over the reasoning process [2407.03600v2]. Lastly, contrastive chain-of-thought prompting introduces both valid and invalid reasoning demonstrations, guiding models to avoid mistakes and improve generalization [2506.03673v1]. Overall, these advancements illustrate how structured reasoning paradigms can significantly elevate the reasoning capabilities of language models [2201.11903v6] [2404.14812v2].",
-    "citations": [
-      "2406.09136v2",
-      "2509.00190v2",
-      "2502.12134v2",
-      "2407.03600v2",
-      "2506.03673v1",
-      "2201.11903v6",
-      "2404.14812v2"
-    ],
-    "coverage_score": 0.8658844232559204,
-    "total_llm_calls": 5,
-    "llm_calls_avoided": 0,
-    "per_sentence": [
-      {
-        "sentence": "Chain of Thought (CoT) reasoning enhances language model performance by encouraging step-by-step logical reasoning, which significantly improves the ability to tackle complex tasks [2406.09136v2] [2509.00190v2].",
-        "sf": 0.04831870408567023,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "This method allows models to generate a series of intermediate reasoning steps, leading to better performance on various reasoning benchmarks, including arithmetic and commonsense tasks [2509.00190v2].",
-        "sf": 0.07561371907367546,
-        "gamma_decision": "escalate"
-      },
-      {
-        "sentence": "Additionally, the introduction of frameworks like Flow Chain of Thought (Flow CoT) enables recursive inference, refining cognitive states across iterations without the need for extensive pretraining [2406.09136v2].",
-        "sf": 0.016917762239977076,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "Furthermore, leveraging reasoning patterns can enhance CoT prompting by selecting diverse demonstrations that mitigate noise and improve interpretability [2502.12134v2].",
-        "sf": 0.46797342583882356,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "The effectiveness of CoT is also supported by the Representation-of-Thought (RoT) framework, which enhances robustness and control over the reasoning process [2407.03600v2].",
-        "sf": 0.01092437153252721,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "Lastly, contrastive chain-of-thought prompting introduces both valid and invalid reasoning demonstrations, guiding models to avoid mistakes and improve generalization [2506.03673v1].",
-        "sf": 0.3280772711529689,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "Overall, these advancements illustrate how structured reasoning paradigms can significantly elevate the reasoning capabilities of language models [2201.11903v6] [2404.14812v2].",
-        "sf": 0.8622783670713275,
-        "gamma_decision": "approve"
-      }
-    ],
-    "elapsed_s": 16.4
-  },
-  {
-    "query": "What methods are used to detect hallucinations in language models?",
-    "status": "force_finalized",
-    "critic_loop_count": 3,
-    "cascade_decisions": [
-      "escalate",
-      "reject",
-      "reject",
-      "reject",
-      "reject",
-      "approve",
-      "reject",
-      "escalate"
-    ],
-    "final_answer": "Various methods have been developed to detect hallucinations in language models (LLMs), each addressing distinct aspects of this challenge. For instance, FG-PRM categorizes hallucinations into types and implements a fine-grained detection mechanism that evaluates each reasoning step, thus enhancing understanding and mitigation of the issue [2502.13622v2]. In parallel, the Chain of Natural Language Inference (CoNLI) framework offers an effective method for detecting ungrounded hallucinations while improving text quality through post-editing techniques, showcasing its plug-and-play capability in real-world applications [2508.01862v1]. Alternatively, the HIDE method employs a statistical approach that analyzes the decoupling of internal representations to detect hallucinations efficiently, achieving notable performance improvements over traditional multi-pass methods [2506.17748v1]. Additionally, the MIND framework utilizes the internal states of LLMs for real-time hallucination detection, which allows for unsupervised operation without the need for extensive manual data labeling [2401.06855v4]. The theoretical exploration of hallucination detection frameworks highlights the necessity of expert-labeled examples to enhance the reliability of detection systems, indicating that such feedback substantially improves performance [2504.17004v2]. Lastly, the Hughes Hallucination Evaluation Model (HHEM) exemplifies a lightweight classification method that not only improves efficiency but also maintains high detection accuracy across a variety of tasks [2409.11353v3]. Together, these approaches illustrate a comprehensive strategy for tackling the complexities of hallucination detection in LLMs.",
-    "citations": [
-      "2502.13622v2",
-      "2508.01862v1",
-      "2506.17748v1",
-      "2401.06855v4",
-      "2504.17004v2",
-      "2409.11353v3"
-    ],
-    "coverage_score": 0.8803715109825134,
-    "total_llm_calls": 8,
-    "llm_calls_avoided": 3,
-    "per_sentence": [
-      {
-        "sentence": "Various methods have been developed to detect hallucinations in language models (LLMs), each addressing distinct aspects of this challenge.",
-        "sf": 0.24921708905034937,
-        "gamma_decision": "escalate"
-      },
-      {
-        "sentence": "For instance, FG-PRM categorizes hallucinations into types and implements a fine-grained detection mechanism that evaluates each reasoning step, thus enhancing understanding and mitigation of the issue [2502.13622v2].",
-        "sf": 0.008217329499507844,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "In parallel, the Chain of Natural Language Inference (CoNLI) framework offers an effective method for detecting ungrounded hallucinations while improving text quality through post-editing techniques, showcasing its plug-and-play capability in real-world applications [2508.01862v1].",
-        "sf": 0.01793155842550923,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "Alternatively, the HIDE method employs a statistical approach that analyzes the decoupling of internal representations to detect hallucinations efficiently, achieving notable performance improvements over traditional multi-pass methods [2506.17748v1].",
-        "sf": 0.021575307840794877,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "Additionally, the MIND framework utilizes the internal states of LLMs for real-time hallucination detection, which allows for unsupervised operation without the need for extensive manual data labeling [2401.06855v4].",
-        "sf": 0.0011339749290152378,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "The theoretical exploration of hallucination detection frameworks highlights the necessity of expert-labeled examples to enhance the reliability of detection systems, indicating that such feedback substantially improves performance [2504.17004v2].",
-        "sf": 0.3384551735671026,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "Lastly, the Hughes Hallucination Evaluation Model (HHEM) exemplifies a lightweight classification method that not only improves efficiency but also maintains high detection accuracy across a variety of tasks [2409.11353v3].",
-        "sf": 0.037047105180779645,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "Together, these approaches illustrate a comprehensive strategy for tackling the complexities of hallucination detection in LLMs.",
-        "sf": 0.14258375102323217,
-        "gamma_decision": "escalate"
-      }
-    ],
-    "elapsed_s": 21.7
-  },
-  {
-    "query": "How does dense passage retrieval compare to BM25 for open-domain QA?",
-    "status": "approved",
-    "critic_loop_count": 1,
-    "cascade_decisions": [
-      "approve",
-      "approve",
-      "approve",
-      "approve",
-      "reject",
-      "approve"
-    ],
-    "final_answer": "Dense passage retrieval (DPR) has shown significant advantages over traditional methods like BM25 in open-domain question answering. The use of contextualized language models in dense retrieval allows for improved search effectiveness, particularly when comparing the performance of dense retrieval methods against BM25 baselines [2108.06279v2]. Research indicates that dense retrieval models, especially those utilizing multiple representations, can outperform BM25, particularly for complex queries and those that are challenging for BM25 to handle [2108.06279v2]. Furthermore, dense retrieval approaches, such as the Mixture-of-Experts framework in DESIRE-ME, have demonstrated enhanced adaptability and performance across diverse query types, achieving notable improvements in metrics like NDCG@10 and P@1 compared to traditional methods [2601.06196v3] [2410.14609v2]. However, it is important to note that dense retrieval models can struggle with noisy input, which may affect their performance relative to BM25 in real-world applications [2411.16133v2]. Overall, while BM25 remains a robust baseline, the advancements in dense passage retrieval highlight its growing importance and effectiveness in the field of open-domain QA [2108.06279v2] [2601.06196v3].",
-    "citations": [
-      "2108.06279v2",
-      "2601.06196v3",
-      "2410.14609v2",
-      "2411.16133v2"
-    ],
-    "coverage_score": 0.8196446299552917,
-    "total_llm_calls": 5,
-    "llm_calls_avoided": 0,
-    "per_sentence": [
-      {
-        "sentence": "Dense passage retrieval (DPR) has shown significant advantages over traditional methods like BM25 in open-domain question answering.",
-        "sf": 0.3448860251789428,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "The use of contextualized language models in dense retrieval allows for improved search effectiveness, particularly when comparing the performance of dense retrieval methods against BM25 baselines [2108.06279v2].",
-        "sf": 0.5455607395226687,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "Research indicates that dense retrieval models, especially those utilizing multiple representations, can outperform BM25, particularly for complex queries and those that are challenging for BM25 to handle [2108.06279v2].",
-        "sf": 0.2617403726658282,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "Furthermore, dense retrieval approaches, such as the Mixture-of-Experts framework in DESIRE-ME, have demonstrated enhanced adaptability and performance across diverse query types, achieving notable improvements in metrics like NDCG@10 and P@1 compared to traditional methods [2601.06196v3] [2410.14609v2].",
-        "sf": 0.48398036320531435,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "However, it is important to note that dense retrieval models can struggle with noisy input, which may affect their performance relative to BM25 in real-world applications [2411.16133v2].",
-        "sf": 0.011884586032220288,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "Overall, while BM25 remains a robust baseline, the advancements in dense passage retrieval highlight its growing importance and effectiveness in the field of open-domain QA [2108.06279v2] [2601.06196v3].",
-        "sf": 0.20035532167301315,
-        "gamma_decision": "escalate"
-      }
-    ],
-    "elapsed_s": 25.0
-  },
-  {
-    "query": "What is retrieval-augmented generation and how does it work?",
-    "status": "approved",
     "critic_loop_count": 2,
     "cascade_decisions": [
-      "reject",
-      "reject",
-      "reject",
-      "approve",
       "escalate",
+      "reject",
+      "escalate",
+      "reject",
       "escalate",
       "approve"
     ],
-    "final_answer": "Retrieval-augmented generation (RAG) is a technique designed to enhance large language models (LLMs) by integrating external knowledge in real-time during text generation, thereby addressing issues like hallucinations and factual inaccuracies [2406.13249v2] [2411.16133v2]. The RAG process typically involves retrieving relevant knowledge chunks before they are incorporated into the generation phase, although the effectiveness of this method heavily relies on the quality and specificity of the input query, as even small changes can significantly impact retrieval accuracy [2406.13249v2] [2504.10529v1]. Traditional RAG systems face limitations, such as treating knowledge chunks uniformly for both retrieval and generation, which can reduce efficiency and effectiveness [2504.10529v1]. Newer frameworks, like R\u00b2AG, aim to mitigate these issues by incorporating nuanced retrieval features to create a more coherent generation process, ultimately bridging gaps between LLMs and the information retrieved [2309.15217v2]. Moreover, active retrieval strategies, such as FLARE, allow models to continually gather relevant information during text generation, enhancing the performance for more complex tasks that require sustained knowledge integration [2406.16167v1]. As RAG continues to evolve, its modular architecture facilitates the incorporation of external knowledge without necessitating substantial changes to the underlying model architecture [2411.16133v2]. This ongoing development underscores the importance of addressing the inherent challenges in retrieval processes to optimize the generation outcomes [2404.07220v2] [2411.16133v2].",
+    "final_answer": "Chain of Thought (CoT) prompting has been shown to significantly boost the reasoning abilities of large language models (LLMs) by facilitating a step-by-step logical process, which is crucial for executing complex tasks [2201.11903v6] [2402.00559v4]. However, traditional CoT methods face challenges such as limitations in scalability and generalization due to their reliance on intermediate reasoning steps [2201.11903v6]. To overcome these challenges, Flow Chain of Thought (Flow CoT) introduces a framework where recursive inference evolves progressively, allowing deeper reasoning without manual supervision [2201.11903v6]. Additionally, the Enhanced Mycelium of Thought (EMoT) framework promotes hierarchical cognitive processing and employs strategic dormancy to enhance stability and performance across various domains [2407.03600v2]. Moreover, the use of contrastive chain-of-thought prompting, which includes both valid and invalid demonstrations, aids models in refining their reasoning by highlighting potential errors to avoid [2411.09111v8]. Collectively, these innovative approaches illustrate that structured reasoning paradigms can lead to significant enhancements in both the accuracy and interpretability of LLM outputs [2506.03673v1] [2311.09277v1].",
     "citations": [
-      "2406.13249v2",
-      "2411.16133v2",
-      "2504.10529v1",
-      "2309.15217v2",
-      "2406.16167v1",
-      "2404.07220v2"
+      "2201.11903v6",
+      "2402.00559v4",
+      "2407.03600v2",
+      "2411.09111v8",
+      "2506.03673v1",
+      "2311.09277v1"
     ],
-    "coverage_score": 0.8806741833686829,
+    "coverage_score": 0.8658844232559204,
     "total_llm_calls": 7,
     "llm_calls_avoided": 1,
     "per_sentence": [
       {
-        "sentence": "Retrieval-augmented generation (RAG) is a technique designed to enhance large language models (LLMs) by integrating external knowledge in real-time during text generation, thereby addressing issues like hallucinations and factual inaccuracies [2406.13249v2] [2411.16133v2].",
-        "sf": 0.002925363561616616,
+        "sentence": "Chain of Thought (CoT) prompting has been shown to significantly boost the reasoning abilities of large language models (LLMs) by facilitating a step-by-step logical process, which is crucial for executing complex tasks [2201.11903v6] [2402.00559v4].",
+        "sf": 0.036577093796959004,
         "gamma_decision": "reject"
       },
       {
-        "sentence": "The RAG process typically involves retrieving relevant knowledge chunks before they are incorporated into the generation phase, although the effectiveness of this method heavily relies on the quality and specificity of the input query, as even small changes can significantly impact retrieval accuracy [2406.13249v2] [2504.10529v1].",
-        "sf": 0.0507166277950872,
+        "sentence": "However, traditional CoT methods face challenges such as limitations in scalability and generalization due to their reliance on intermediate reasoning steps [2201.11903v6].",
+        "sf": 0.0014637367828853757,
+        "gamma_decision": "reject"
+      },
+      {
+        "sentence": "To overcome these challenges, Flow Chain of Thought (Flow CoT) introduces a framework where recursive inference evolves progressively, allowing deeper reasoning without manual supervision [2201.11903v6].",
+        "sf": 0.040546287935345336,
+        "gamma_decision": "reject"
+      },
+      {
+        "sentence": "Additionally, the Enhanced Mycelium of Thought (EMoT) framework promotes hierarchical cognitive processing and employs strategic dormancy to enhance stability and performance across various domains [2407.03600v2].",
+        "sf": 0.01975374835207104,
+        "gamma_decision": "reject"
+      },
+      {
+        "sentence": "Moreover, the use of contrastive chain-of-thought prompting, which includes both valid and invalid demonstrations, aids models in refining their reasoning by highlighting potential errors to avoid [2411.09111v8].",
+        "sf": 0.10205023391545898,
         "gamma_decision": "escalate"
       },
       {
-        "sentence": "Traditional RAG systems face limitations, such as treating knowledge chunks uniformly for both retrieval and generation, which can reduce efficiency and effectiveness [2504.10529v1].",
-        "sf": 0.004980581944740387,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "Newer frameworks, like R\u00b2AG, aim to mitigate these issues by incorporating nuanced retrieval features to create a more coherent generation process, ultimately bridging gaps between LLMs and the information retrieved [2309.15217v2].",
-        "sf": 0.27175128935205983,
+        "sentence": "Collectively, these innovative approaches illustrate that structured reasoning paradigms can lead to significant enhancements in both the accuracy and interpretability of LLM outputs [2506.03673v1] [2311.09277v1].",
+        "sf": 0.8150039606701913,
         "gamma_decision": "approve"
-      },
+      }
+    ],
+    "elapsed_s": 29.6
+  },
+  {
+    "query": "What methods are used to detect hallucinations in language models?",
+    "status": "approved",
+    "critic_loop_count": 1,
+    "cascade_decisions": [
+      "escalate",
+      "reject",
+      "escalate",
+      "escalate",
+      "reject",
+      "escalate"
+    ],
+    "final_answer": "Various methods have been proposed to detect hallucinations in language models (LLMs). One approach is FG-PRM (Fine-Grained Process Reward Model), which categorizes hallucinations into six types and detects them in a fine-grained, step-level manner, demonstrating superior performance in tasks like GSM8K and MATH benchmarks [2506.09886v2]. Another method involves a hierarchical framework using Chain of Natural Language Inference (CoNLI) for detecting ungrounded hallucinations, which enhances text quality through post-editing without requiring fine-tuning [2506.17748v1]. Additionally, the HIDE method utilizes decoupled representations to quantify the statistical decoupling between an LLM's internal representations and its generated outputs, achieving significant improvements in detection efficiency [2504.17004v2]. Furthermore, MIND offers an unsupervised framework that leverages the internal states of LLMs for real-time hallucination detection, outperforming existing state-of-the-art methods [2502.13622v2]. Lastly, a theoretical framework suggests that automated hallucination detection can be feasible when using expert-labeled feedback, which enhances the reliability of detection algorithms [2605.12384v1].",
+    "citations": [
+      "2506.09886v2",
+      "2506.17748v1",
+      "2504.17004v2",
+      "2502.13622v2",
+      "2605.12384v1"
+    ],
+    "coverage_score": 0.8894835710525513,
+    "total_llm_calls": 5,
+    "llm_calls_avoided": 0,
+    "per_sentence": [
       {
-        "sentence": "Moreover, active retrieval strategies, such as FLARE, allow models to continually gather relevant information during text generation, enhancing the performance for more complex tasks that require sustained knowledge integration [2406.16167v1].",
-        "sf": 0.23058735474087932,
+        "sentence": "Various methods have been proposed to detect hallucinations in language models (LLMs).",
+        "sf": 0.20322938274256486,
         "gamma_decision": "escalate"
       },
       {
-        "sentence": "As RAG continues to evolve, its modular architecture facilitates the incorporation of external knowledge without necessitating substantial changes to the underlying model architecture [2411.16133v2].",
-        "sf": 0.017099850311593986,
+        "sentence": "One approach is FG-PRM (Fine-Grained Process Reward Model), which categorizes hallucinations into six types and detects them in a fine-grained, step-level manner, demonstrating superior performance in tasks like GSM8K and MATH benchmarks [2506.09886v2].",
+        "sf": 0.013238578726511336,
         "gamma_decision": "reject"
       },
       {
-        "sentence": "This ongoing development underscores the importance of addressing the inherent challenges in retrieval processes to optimize the generation outcomes [2404.07220v2] [2411.16133v2].",
-        "sf": 0.14767953213570745,
+        "sentence": "Another method involves a hierarchical framework using Chain of Natural Language Inference (CoNLI) for detecting ungrounded hallucinations, which enhances text quality through post-editing without requiring fine-tuning [2506.17748v1].",
+        "sf": 0.06988392230965544,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "Additionally, the HIDE method utilizes decoupled representations to quantify the statistical decoupling between an LLM's internal representations and its generated outputs, achieving significant improvements in detection efficiency [2504.17004v2].",
+        "sf": 0.09632980047977178,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "Furthermore, MIND offers an unsupervised framework that leverages the internal states of LLMs for real-time hallucination detection, outperforming existing state-of-the-art methods [2502.13622v2].",
+        "sf": 0.060014582664389304,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "Lastly, a theoretical framework suggests that automated hallucination detection can be feasible when using expert-labeled feedback, which enhances the reliability of detection algorithms [2605.12384v1].",
+        "sf": 0.12765426679910982,
         "gamma_decision": "escalate"
       }
     ],
-    "elapsed_s": 22.6
+    "elapsed_s": 11.9
+  },
+  {
+    "query": "How does dense passage retrieval compare to BM25 for open-domain QA?",
+    "status": "approved",
+    "critic_loop_count": 2,
+    "cascade_decisions": [
+      "escalate",
+      "escalate",
+      "escalate",
+      "escalate",
+      "approve",
+      "approve",
+      "approve"
+    ],
+    "final_answer": "Dense passage retrieval (DPR) has emerged as a powerful alternative to traditional methods like BM25 in open-domain question answering due to its ability to leverage contextualized language models for improved search effectiveness [2601.15518v2]. Unlike BM25, which relies on classical weighting, dense retrieval models, particularly those employing dual-encoder architectures, can directly embed passages and queries into dense vectors, enhancing retrieval efficiency and performance [2601.06196v3]. However, these dense models are not without challenges; their effectiveness can diminish significantly when encountering noisy text, such as user-generated queries with typos [2601.06196v3]. \n\nIn comparison to BM25, dense retrieval methods exhibit superior performance, especially when dealing with challenging queries that require a nuanced understanding of context [2601.15518v2]. For instance, the use of multiple representations in dense retrieval has been found to yield better outcomes for difficult queries than BM25, showcasing the adaptability of these models in handling various information needs [2601.15518v2]. Furthermore, novel frameworks like DESIRE-ME, which utilize a Mixture-of-Experts mechanism, have demonstrated substantial improvements in retrieval capabilities, achieving notable gains in metrics such as NDCG and P@1 against established dense retrieval models [2108.06279v2] [2410.14609v2]. Thus, while BM25 remains a reliable baseline, the advancements in dense passage retrieval underscore its growing significance in effectively addressing the complexities of open-domain question answering.",
+    "citations": [
+      "2601.15518v2",
+      "2601.06196v3",
+      "2108.06279v2",
+      "2410.14609v2"
+    ],
+    "coverage_score": 0.8196446299552917,
+    "total_llm_calls": 7,
+    "llm_calls_avoided": 1,
+    "per_sentence": [
+      {
+        "sentence": "Dense passage retrieval (DPR) has emerged as a powerful alternative to traditional methods like BM25 in open-domain question answering due to its ability to leverage contextualized language models for improved search effectiveness [2601.15518v2].",
+        "sf": 0.12739667750102884,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "Unlike BM25, which relies on classical weighting, dense retrieval models, particularly those employing dual-encoder architectures, can directly embed passages and queries into dense vectors, enhancing retrieval efficiency and performance [2601.06196v3].",
+        "sf": 0.18622938968517244,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "However, these dense models are not without challenges; their effectiveness can diminish significantly when encountering noisy text, such as user-generated queries with typos [2601.06196v3].",
+        "sf": 0.02650504333331168,
+        "gamma_decision": "reject"
+      },
+      {
+        "sentence": "In comparison to BM25, dense retrieval methods exhibit superior performance, especially when dealing with challenging queries that require a nuanced understanding of context [2601.15518v2].",
+        "sf": 0.2290743223369185,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "For instance, the use of multiple representations in dense retrieval has been found to yield better outcomes for difficult queries than BM25, showcasing the adaptability of these models in handling various information needs [2601.15518v2].",
+        "sf": 0.4768953297986769,
+        "gamma_decision": "approve"
+      },
+      {
+        "sentence": "Furthermore, novel frameworks like DESIRE-ME, which utilize a Mixture-of-Experts mechanism, have demonstrated substantial improvements in retrieval capabilities, achieving notable gains in metrics such as NDCG and P@1 against established dense retrieval models [2108.06279v2] [2410.14609v2].",
+        "sf": 0.6708252432409465,
+        "gamma_decision": "approve"
+      },
+      {
+        "sentence": "Thus, while BM25 remains a reliable baseline, the advancements in dense passage retrieval underscore its growing significance in effectively addressing the complexities of open-domain question answering.",
+        "sf": 0.2519944610295684,
+        "gamma_decision": "approve"
+      }
+    ],
+    "elapsed_s": 24.5
+  },
+  {
+    "query": "What is retrieval-augmented generation and how does it work?",
+    "status": "approved",
+    "critic_loop_count": 1,
+    "cascade_decisions": [
+      "reject",
+      "escalate",
+      "escalate",
+      "escalate",
+      "escalate",
+      "escalate"
+    ],
+    "final_answer": "Retrieval-augmented generation (RAG) is a method that enhances the outputs of large language models (LLMs) by integrating relevant information retrieved from external knowledge sources during inference, which improves factual consistency and reduces hallucinations [2404.07220v2] [2411.16133v2]. RAG systems work by retrieving and incorporating external knowledge into input prompts, which helps address the limitations of LLMs in handling up-to-date knowledge [2504.19754v1]. However, these systems face challenges such as the dependence on the quality of the input query for accurate retrieval and the non-monotonic utility of retrieved chunks, where adding more chunks can sometimes degrade the quality of the output [2504.19754v1] [2504.10529v1]. Additionally, existing RAG methods often use identical representations of knowledge chunks for both retrieval and generation, which can lead to suboptimal performance [2504.10529v1]. To improve RAG systems, various frameworks have been proposed, such as R$^2$AG, which incorporates retrieval information into the generation process to bridge the semantic gap between LLMs and retrievers [2406.13249v2]. Overall, RAG represents a modular approach for integrating external knowledge without increasing the model's capacity, making it adaptable for various applications [2507.06956v1].",
+    "citations": [
+      "2404.07220v2",
+      "2411.16133v2",
+      "2504.19754v1",
+      "2504.10529v1",
+      "2406.13249v2",
+      "2507.06956v1"
+    ],
+    "coverage_score": 0.8806741833686829,
+    "total_llm_calls": 5,
+    "llm_calls_avoided": 0,
+    "per_sentence": [
+      {
+        "sentence": "Retrieval-augmented generation (RAG) is a method that enhances the outputs of large language models (LLMs) by integrating relevant information retrieved from external knowledge sources during inference, which improves factual consistency and reduces hallucinations [2404.07220v2] [2411.16133v2].",
+        "sf": 0.012098159953714667,
+        "gamma_decision": "reject"
+      },
+      {
+        "sentence": "RAG systems work by retrieving and incorporating external knowledge into input prompts, which helps address the limitations of LLMs in handling up-to-date knowledge [2504.19754v1].",
+        "sf": 0.09226842905194871,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "However, these systems face challenges such as the dependence on the quality of the input query for accurate retrieval and the non-monotonic utility of retrieved chunks, where adding more chunks can sometimes degrade the quality of the output [2504.19754v1] [2504.10529v1].",
+        "sf": 0.06516248052742288,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "Additionally, existing RAG methods often use identical representations of knowledge chunks for both retrieval and generation, which can lead to suboptimal performance [2504.10529v1].",
+        "sf": 0.03451383951708809,
+        "gamma_decision": "reject"
+      },
+      {
+        "sentence": "To improve RAG systems, various frameworks have been proposed, such as R$^2$AG, which incorporates retrieval information into the generation process to bridge the semantic gap between LLMs and retrievers [2406.13249v2].",
+        "sf": 0.2303035514068457,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "Overall, RAG represents a modular approach for integrating external knowledge without increasing the model's capacity, making it adaptable for various applications [2507.06956v1].",
+        "sf": 0.05406337256642405,
+        "gamma_decision": "escalate"
+      }
+    ],
+    "elapsed_s": 15.0
   },
   {
     "query": "How does reranking improve retrieval quality in RAG systems?",
     "status": "approved",
     "critic_loop_count": 1,
     "cascade_decisions": [
-      "reject",
+      "escalate",
       "approve",
       "escalate",
       "approve",
-      "approve",
       "approve"
     ],
-    "final_answer": "Reranking improves retrieval quality in Retrieval-Augmented Generation (RAG) systems by enhancing the relevance and coherence of the retrieved documents. For instance, the introduction of metacognitive frameworks like MetaRAG allows models to critique and refine their reasoning, which is significantly bolstered by the use of rerankers that optimize the selection of retrieved documents [2411.16133v2]. Additionally, the Blended RAG method employs hybrid query strategies and semantic search techniques to achieve better retrieval results, demonstrating that effective reranking can set new benchmarks in information retrieval [2404.07220v2]. Furthermore, the HeteRAG framework decouples the representations of knowledge chunks for retrieval and generation, which can lead to improved effectiveness and efficiency through better reranking of relevant information [2406.13249v2]. By addressing the challenges of redundancy and ordering in retrieved chunks, reranking strategies can ensure that only the most pertinent information is presented to the language model, thereby enhancing overall performance [2406.16167v1]. Overall, these advancements in reranking contribute to a more robust and accurate retrieval process within RAG systems, ultimately leading to higher quality outputs [2411.16133v2] [2406.16167v1].",
+    "final_answer": "Reranking improves retrieval quality in Retrieval-Augmented Generation (RAG) systems by enhancing the selection of relevant documents from a potentially large corpus. For instance, the introduction of Metacognitive Retrieval Augmented Generation (MetaRAG) demonstrates that reranking can significantly refine the reasoning process of Large Language Models (LLMs) by allowing them to critique and refine their retrieval choices, leading to better performance compared to standard RAG systems [2504.16883v1]. Additionally, the Blended RAG method employs hybrid query strategies that leverage semantic search techniques, resulting in improved retrieval accuracy and setting new benchmarks for information retrieval datasets [2504.10529v1]. Furthermore, the HeteRAG framework enhances retrieval accuracy by decoupling the representations of knowledge chunks for retrieval and generation, thus optimizing the effectiveness of the retrieval process [2406.16167v1]. Overall, these advancements in reranking and retrieval strategies contribute to more coherent and contextually relevant outputs in RAG systems [2604.19899v1] [2507.06956v1].",
     "citations": [
-      "2411.16133v2",
-      "2404.07220v2",
-      "2406.13249v2",
-      "2406.16167v1"
+      "2504.16883v1",
+      "2504.10529v1",
+      "2406.16167v1",
+      "2604.19899v1",
+      "2507.06956v1"
     ],
     "coverage_score": 0.8111465573310852,
     "total_llm_calls": 5,
     "llm_calls_avoided": 0,
     "per_sentence": [
       {
-        "sentence": "Reranking improves retrieval quality in Retrieval-Augmented Generation (RAG) systems by enhancing the relevance and coherence of the retrieved documents.",
-        "sf": 0.04550787720190988,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "For instance, the introduction of metacognitive frameworks like MetaRAG allows models to critique and refine their reasoning, which is significantly bolstered by the use of rerankers that optimize the selection of retrieved documents [2411.16133v2].",
-        "sf": 0.3065352156011438,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "Additionally, the Blended RAG method employs hybrid query strategies and semantic search techniques to achieve better retrieval results, demonstrating that effective reranking can set new benchmarks in information retrieval [2404.07220v2].",
-        "sf": 0.12904305173660852,
+        "sentence": "Reranking improves retrieval quality in Retrieval-Augmented Generation (RAG) systems by enhancing the selection of relevant documents from a potentially large corpus.",
+        "sf": 0.06516364638657957,
         "gamma_decision": "escalate"
       },
       {
-        "sentence": "Furthermore, the HeteRAG framework decouples the representations of knowledge chunks for retrieval and generation, which can lead to improved effectiveness and efficiency through better reranking of relevant information [2406.13249v2].",
-        "sf": 0.4690568765987747,
+        "sentence": "For instance, the introduction of Metacognitive Retrieval Augmented Generation (MetaRAG) demonstrates that reranking can significantly refine the reasoning process of Large Language Models (LLMs) by allowing them to critique and refine their retrieval choices, leading to better performance compared to standard RAG systems [2504.16883v1].",
+        "sf": 0.7457073812996868,
         "gamma_decision": "approve"
       },
       {
-        "sentence": "By addressing the challenges of redundancy and ordering in retrieved chunks, reranking strategies can ensure that only the most pertinent information is presented to the language model, thereby enhancing overall performance [2406.16167v1].",
-        "sf": 0.7151111910558392,
+        "sentence": "Additionally, the Blended RAG method employs hybrid query strategies that leverage semantic search techniques, resulting in improved retrieval accuracy and setting new benchmarks for information retrieval datasets [2504.10529v1].",
+        "sf": 0.06811999565560042,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "Furthermore, the HeteRAG framework enhances retrieval accuracy by decoupling the representations of knowledge chunks for retrieval and generation, thus optimizing the effectiveness of the retrieval process [2406.16167v1].",
+        "sf": 0.4910031890039796,
         "gamma_decision": "approve"
       },
       {
-        "sentence": "Overall, these advancements in reranking contribute to a more robust and accurate retrieval process within RAG systems, ultimately leading to higher quality outputs [2411.16133v2] [2406.16167v1].",
-        "sf": 0.3677773729700082,
+        "sentence": "Overall, these advancements in reranking and retrieval strategies contribute to more coherent and contextually relevant outputs in RAG systems [2604.19899v1] [2507.06956v1].",
+        "sf": 0.8802584282338075,
         "gamma_decision": "approve"
       }
     ],
-    "elapsed_s": 15.6
+    "elapsed_s": 15.2
   },
   {
     "query": "What role does query expansion play in information retrieval?",
     "status": "approved",
-    "critic_loop_count": 2,
+    "critic_loop_count": 1,
     "cascade_decisions": [
+      "approve",
       "escalate",
-      "escalate",
+      "reject",
       "escalate",
       "approve",
-      "approve",
-      "approve"
+      "reject"
     ],
-    "final_answer": "Query expansion is essential in information retrieval as it enhances the precision and recall of search results. Research indicates that query expansion consistently outperforms a baseline without expansion, demonstrating its value in improving retrieval outcomes [2406.16013v3]. By augmenting the original query with additional metadata or user-related features, systems can address the limitations posed by short user queries that might not fully express the information need [2202.00373v2]. Moreover, the variability in user-generated queries highlights the necessity for robust retrieval mechanisms, as traditional models can struggle with minor changes in queries [2504.10529v1] [2603.01417v1]. Incorporating feedback mechanisms and context-sensitive query rewrites can further refine the query, aligning it more closely with the stylistic and semantic characteristics of relevant documents [2504.10529v1]. Overall, these methods underscore the significant role of query expansion in tailoring search processes to better meet user intents and enhance the effectiveness of retrieval systems [2406.16013v3] [2202.00373v2].",
+    "final_answer": "Query expansion plays a significant role in enhancing the effectiveness of information retrieval systems. It has been shown that query expansion outperforms a no-expansion baseline, indicating that augmenting the original query can lead to better retrieval outcomes [2406.16013v3]. Additionally, previous studies have highlighted that user queries are often short, which can challenge retrieval systems to fetch relevant documents effectively [2504.10529v1]. To address this, expanding the query with additional user-related features or metadata can significantly enhance overall retrieval performance [2504.10529v1]. Furthermore, the robustness of retrieval pipelines can be affected by variations in queries, suggesting that effective query expansion could mitigate some of these issues by providing more context [2603.01417v1] [2504.10529v1]. Overall, query expansion is a critical technique that can improve the relevance and accuracy of retrieved documents in various information retrieval scenarios [2406.16013v3] [2504.10529v1].",
     "citations": [
       "2406.16013v3",
-      "2202.00373v2",
       "2504.10529v1",
       "2603.01417v1"
     ],
-    "coverage_score": 0.7879223227500916,
-    "total_llm_calls": 8,
-    "llm_calls_avoided": 0,
-    "per_sentence": [
-      {
-        "sentence": "Query expansion is essential in information retrieval as it enhances the precision and recall of search results.",
-        "sf": 0.09187914450890754,
-        "gamma_decision": "escalate"
-      },
-      {
-        "sentence": "Research indicates that query expansion consistently outperforms a baseline without expansion, demonstrating its value in improving retrieval outcomes [2406.16013v3].",
-        "sf": 0.040565540783708776,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "By augmenting the original query with additional metadata or user-related features, systems can address the limitations posed by short user queries that might not fully express the information need [2202.00373v2].",
-        "sf": 0.02279387345681592,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "Moreover, the variability in user-generated queries highlights the necessity for robust retrieval mechanisms, as traditional models can struggle with minor changes in queries [2504.10529v1] [2603.01417v1].",
-        "sf": 0.212080463212332,
-        "gamma_decision": "escalate"
-      },
-      {
-        "sentence": "Incorporating feedback mechanisms and context-sensitive query rewrites can further refine the query, aligning it more closely with the stylistic and semantic characteristics of relevant documents [2504.10529v1].",
-        "sf": 0.3128549273410117,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "Overall, these methods underscore the significant role of query expansion in tailoring search processes to better meet user intents and enhance the effectiveness of retrieval systems [2406.16013v3] [2202.00373v2].",
-        "sf": 0.34830415219969274,
-        "gamma_decision": "approve"
-      }
-    ],
-    "elapsed_s": 19.1
-  },
-  {
-    "query": "How do embedding models represent semantic similarity between text passages?",
-    "status": "approved",
-    "critic_loop_count": 1,
-    "cascade_decisions": [
-      "reject",
-      "approve",
-      "approve",
-      "approve",
-      "reject",
-      "approve",
-      "approve"
-    ],
-    "final_answer": "Embedding models represent semantic similarity between text passages by establishing a joint embedding space that allows for consistent representations of text, which is crucial for computing similarity scores effectively [2403.17998v1]. For instance, the T-MASS method enriches text embeddings by modeling them as stochastic embeddings, which enhances their semantic range and improves retrieval accuracy [2403.17998v1]. Additionally, approaches like Poly-Vector Retrieval assign multiple distinct embeddings to capture both content and reference, thereby addressing the challenges of traditional methods that rely solely on semantic embeddings [2507.18518v2]. Furthermore, generative models have been shown to capture nuanced semantic information, leading to improved similarity search results in specific domains, such as biomedicine [2606.21535v1]. Wave-Based Semantic Memory introduces a novel framework that utilizes wave patterns to represent knowledge, allowing for more expressive semantic similarity through resonance-based retrieval [1802.06466v1]. This method preserves both amplitude and phase information, which enhances the model's ability to handle complex semantic relationships [1802.06466v1]. Overall, these diverse approaches highlight the evolving strategies in embedding models to effectively represent and retrieve semantically similar text passages [2403.17998v1] [2507.18518v2] [2606.21535v1] [1802.06466v1].",
-    "citations": [
-      "2403.17998v1",
-      "2507.18518v2",
-      "2606.21535v1",
-      "1802.06466v1"
-    ],
-    "coverage_score": 0.7916324138641357,
+    "coverage_score": 0.7765820622444153,
     "total_llm_calls": 5,
     "llm_calls_avoided": 0,
     "per_sentence": [
       {
-        "sentence": "Embedding models represent semantic similarity between text passages by establishing a joint embedding space that allows for consistent representations of text, which is crucial for computing similarity scores effectively [2403.17998v1].",
-        "sf": 0.0401236786909032,
-        "gamma_decision": "reject"
-      },
-      {
-        "sentence": "For instance, the T-MASS method enriches text embeddings by modeling them as stochastic embeddings, which enhances their semantic range and improves retrieval accuracy [2403.17998v1].",
-        "sf": 0.4321311006636679,
+        "sentence": "Query expansion plays a significant role in enhancing the effectiveness of information retrieval systems.",
+        "sf": 0.2944918125882241,
         "gamma_decision": "approve"
       },
       {
-        "sentence": "Additionally, approaches like Poly-Vector Retrieval assign multiple distinct embeddings to capture both content and reference, thereby addressing the challenges of traditional methods that rely solely on semantic embeddings [2507.18518v2].",
-        "sf": 0.24463332416479017,
+        "sentence": "It has been shown that query expansion outperforms a no-expansion baseline, indicating that augmenting the original query can lead to better retrieval outcomes [2406.16013v3].",
+        "sf": 0.06931286624238228,
         "gamma_decision": "escalate"
       },
       {
-        "sentence": "Furthermore, generative models have been shown to capture nuanced semantic information, leading to improved similarity search results in specific domains, such as biomedicine [2606.21535v1].",
-        "sf": 0.690176602145663,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "Wave-Based Semantic Memory introduces a novel framework that utilizes wave patterns to represent knowledge, allowing for more expressive semantic similarity through resonance-based retrieval [1802.06466v1].",
-        "sf": 0.030315406680890913,
+        "sentence": "Additionally, previous studies have highlighted that user queries are often short, which can challenge retrieval systems to fetch relevant documents effectively [2504.10529v1].",
+        "sf": 0.0002744725062313082,
         "gamma_decision": "reject"
       },
       {
-        "sentence": "This method preserves both amplitude and phase information, which enhances the model's ability to handle complex semantic relationships [1802.06466v1].",
-        "sf": 0.33628465492734555,
+        "sentence": "To address this, expanding the query with additional user-related features or metadata can significantly enhance overall retrieval performance [2504.10529v1].",
+        "sf": 0.0815729691181234,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "Furthermore, the robustness of retrieval pipelines can be affected by variations in queries, suggesting that effective query expansion could mitigate some of these issues by providing more context [2603.01417v1] [2504.10529v1].",
+        "sf": 0.2682685806864279,
         "gamma_decision": "approve"
       },
       {
-        "sentence": "Overall, these diverse approaches highlight the evolving strategies in embedding models to effectively represent and retrieve semantically similar text passages [2403.17998v1] [2507.18518v2] [2606.21535v1] [1802.06466v1].",
-        "sf": 0.5633762304608306,
+        "sentence": "Overall, query expansion is a critical technique that can improve the relevance and accuracy of retrieved documents in various information retrieval scenarios [2406.16013v3] [2504.10529v1].",
+        "sf": 0.0091071077432987,
+        "gamma_decision": "reject"
+      }
+    ],
+    "elapsed_s": 17.2
+  },
+  {
+    "query": "How do embedding models represent semantic similarity between text passages?",
+    "status": "force_finalized",
+    "critic_loop_count": 3,
+    "cascade_decisions": [
+      "escalate",
+      "escalate",
+      "escalate",
+      "approve",
+      "reject",
+      "approve"
+    ],
+    "final_answer": "Embedding models represent semantic similarity between text passages through various innovative methodologies aimed at enhancing the expressiveness and accuracy of embeddings. For instance, the T-MASS framework models text as a stochastic embedding, which allows for a flexible semantic range that improves the retrieval of relevant text-video pairs significantly compared to traditional embeddings [2403.17998v1]. Another approach, Poly-Vector Retrieval, assigns distinct embeddings for both content and reference in legal texts, which enhances accuracy for queries that depend on specific identifiers or labels [2509.09691v1]. Additionally, a generative model within the Retrieval Augmented Generation method captures nuanced semantic information, yielding high similarity scores in specialized datasets such as the BIOSSES dataset [2507.18518v2]. Furthermore, the Wave-Based Semantic Memory framework introduces a novel representation of semantic similarity by preserving both amplitude and phase information through wave patterns, enhancing the ability to represent complex meanings effectively [1906.00041v1]. These diverse methodologies demonstrate how different embedding models can adapt to various contexts, ultimately improving the assessment of semantic similarity between text passages.",
+    "citations": [
+      "2403.17998v1",
+      "2509.09691v1",
+      "2507.18518v2",
+      "1906.00041v1"
+    ],
+    "coverage_score": 0.7916324138641357,
+    "total_llm_calls": 8,
+    "llm_calls_avoided": 3,
+    "per_sentence": [
+      {
+        "sentence": "Embedding models represent semantic similarity between text passages through various innovative methodologies aimed at enhancing the expressiveness and accuracy of embeddings.",
+        "sf": 0.1952693861476947,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "For instance, the T-MASS framework models text as a stochastic embedding, which allows for a flexible semantic range that improves the retrieval of relevant text-video pairs significantly compared to traditional embeddings [2403.17998v1].",
+        "sf": 0.17708015242863437,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "Another approach, Poly-Vector Retrieval, assigns distinct embeddings for both content and reference in legal texts, which enhances accuracy for queries that depend on specific identifiers or labels [2509.09691v1].",
+        "sf": 0.2096830705614105,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "Additionally, a generative model within the Retrieval Augmented Generation method captures nuanced semantic information, yielding high similarity scores in specialized datasets such as the BIOSSES dataset [2507.18518v2].",
+        "sf": 0.3698010133567098,
+        "gamma_decision": "approve"
+      },
+      {
+        "sentence": "Furthermore, the Wave-Based Semantic Memory framework introduces a novel representation of semantic similarity by preserving both amplitude and phase information through wave patterns, enhancing the ability to represent complex meanings effectively [1906.00041v1].",
+        "sf": 0.0383017246599949,
+        "gamma_decision": "reject"
+      },
+      {
+        "sentence": "These diverse methodologies demonstrate how different embedding models can adapt to various contexts, ultimately improving the assessment of semantic similarity between text passages.",
+        "sf": 0.7649721827764728,
         "gamma_decision": "approve"
       }
     ],
-    "elapsed_s": 11.3
+    "elapsed_s": 29.1
   },
   {
     "query": "What is self-consistency decoding for language models?",
     "status": "approved",
-    "critic_loop_count": 2,
+    "critic_loop_count": 1,
     "cascade_decisions": [
+      "escalate",
       "escalate",
       "reject",
       "approve",
-      "approve",
-      "approve",
+      "escalate",
       "escalate"
     ],
-    "final_answer": "Self-consistency decoding is a strategy that enhances the performance of language models by sampling multiple reasoning paths before selecting the most consistent answer, rather than depending solely on the greedy decoding approach [2311.01740v2]. This method is rooted in the understanding that complex reasoning tasks may have multiple valid approaches, each converging on the correct solution [2311.01740v2]. Empirical evaluations indicate that this approach significantly boosts performance on various arithmetic and commonsense reasoning benchmarks, highlighting its effectiveness [2311.01740v2]. Moreover, self-consistency has been shown to integrate well with other methodologies, such as diffusion models, which can further improve reasoning capabilities and self-correction in these systems [2403.15450v1]. The focus on consistency also opens avenues for detecting hallucinations in language models, as it underscores the importance of verifying responses against multiple generated outputs [2203.11171v4]. Thus, self-consistency can be seen as a critical component in the development of more reliable and robust language modeling techniques [2311.01740v2] [2203.11171v4].",
+    "final_answer": "Self-consistency decoding is a novel decoding strategy proposed to enhance the performance of language models, particularly in the context of chain-of-thought prompting. This method replaces the naive greedy decoding approach by first sampling a diverse set of reasoning paths instead of relying solely on the greedy one, and then selecting the most consistent answer by marginalizing out the sampled reasoning paths [2203.11171v4]. The underlying intuition is that complex reasoning problems often have multiple valid approaches leading to a unique correct answer [2203.11171v4]. Empirical evaluations have demonstrated that self-consistency significantly improves performance on various reasoning benchmarks, such as GSM8K and SVAMP, showcasing substantial gains in accuracy [2203.11171v4]. Additionally, self-consistency decoding is recognized for its ability to enhance reasoning capabilities, particularly when integrated with other techniques like diffusion models [2410.08851v1]. This approach not only aids in achieving better results but also contributes to a deeper understanding of reasoning processes in language models [2501.14342v3].",
     "citations": [
-      "2311.01740v2",
-      "2403.15450v1",
-      "2203.11171v4"
+      "2203.11171v4",
+      "2410.08851v1",
+      "2501.14342v3"
     ],
     "coverage_score": 0.7784972786903381,
-    "total_llm_calls": 8,
+    "total_llm_calls": 5,
     "llm_calls_avoided": 0,
     "per_sentence": [
       {
-        "sentence": "Self-consistency decoding is a strategy that enhances the performance of language models by sampling multiple reasoning paths before selecting the most consistent answer, rather than depending solely on the greedy decoding approach [2311.01740v2].",
-        "sf": 0.09482166801454955,
+        "sentence": "Self-consistency decoding is a novel decoding strategy proposed to enhance the performance of language models, particularly in the context of chain-of-thought prompting.",
+        "sf": 0.180651499483458,
         "gamma_decision": "escalate"
       },
       {
-        "sentence": "This method is rooted in the understanding that complex reasoning tasks may have multiple valid approaches, each converging on the correct solution [2311.01740v2].",
-        "sf": 0.007639307291455899,
+        "sentence": "This method replaces the naive greedy decoding approach by first sampling a diverse set of reasoning paths instead of relying solely on the greedy one, and then selecting the most consistent answer by marginalizing out the sampled reasoning paths [2203.11171v4].",
+        "sf": 0.15603031182799937,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "The underlying intuition is that complex reasoning problems often have multiple valid approaches leading to a unique correct answer [2203.11171v4].",
+        "sf": 0.015234743539902732,
         "gamma_decision": "reject"
       },
       {
-        "sentence": "Empirical evaluations indicate that this approach significantly boosts performance on various arithmetic and commonsense reasoning benchmarks, highlighting its effectiveness [2311.01740v2].",
-        "sf": 0.4871760876993078,
+        "sentence": "Empirical evaluations have demonstrated that self-consistency significantly improves performance on various reasoning benchmarks, such as GSM8K and SVAMP, showcasing substantial gains in accuracy [2203.11171v4].",
+        "sf": 0.24616432109304154,
+        "gamma_decision": "escalate"
+      },
+      {
+        "sentence": "Additionally, self-consistency decoding is recognized for its ability to enhance reasoning capabilities, particularly when integrated with other techniques like diffusion models [2410.08851v1].",
+        "sf": 0.5773191746966237,
         "gamma_decision": "approve"
       },
       {
-        "sentence": "Moreover, self-consistency has been shown to integrate well with other methodologies, such as diffusion models, which can further improve reasoning capabilities and self-correction in these systems [2403.15450v1].",
-        "sf": 0.4571509439578152,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "The focus on consistency also opens avenues for detecting hallucinations in language models, as it underscores the importance of verifying responses against multiple generated outputs [2203.11171v4].",
-        "sf": 0.3110992400895936,
-        "gamma_decision": "approve"
-      },
-      {
-        "sentence": "Thus, self-consistency can be seen as a critical component in the development of more reliable and robust language modeling techniques [2311.01740v2] [2203.11171v4].",
-        "sf": 0.28954292384226177,
+        "sentence": "This approach not only aids in achieving better results but also contributes to a deeper understanding of reasoning processes in language models [2501.14342v3].",
+        "sf": 0.9616911203096246,
         "gamma_decision": "approve"
       }
     ],
-    "elapsed_s": 16.1
+    "elapsed_s": 11.6
   }
 ]

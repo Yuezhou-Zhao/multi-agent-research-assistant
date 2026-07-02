@@ -1,24 +1,24 @@
-"""Critic — three-layer cascade (Section 4.7 diagram).
+"""Critic — three-layer cascade (Section 4.7 diagram + Section 4.9 update).
 
 L1: Gamma sentence scorer over the draft (zero LLM, ~ms per sentence).
-    Rejects on any "reject" (SF < CERTAIN_WRONG). If all sentences either
-    "approve" or "escalate", proceeds to L2.
-L2: Citation grounding, rule-based (zero LLM). Rejects if any bracket
-    references an id that isn't in merged_chunks, or any sentence lacks
-    a citation. If clean, proceeds to L3.
-L3: LLM judge (single gpt-4o-mini call). Reads the draft + critic-view
-    citations and returns an approve/reject decision with a reason.
-    ONLY fires if L1 and L2 both passed.
-
-llm_calls_avoided (Section 3.1) increments by 1 whenever L1 or L2
-short-circuits the L3 judge — this is the primary metric for the cascade
-value story (Section 5.1 target: >60% of Critic decisions resolved by
-Gamma alone). critic_loop_count increments regardless of outcome —
-Section 4.6's outer circuit breaker (max_critic_loops=3) needs to see
-every Critic pass, approved or not.
+    Rejects on majority-reject. Otherwise produces a per-sentence
+    approve/escalate/reject cascade.
+L2a: Rule-based structural citation check (zero LLM). Section 4.8:
+     strips dangling `[N]` markers and enforces MAX_UNCITED_SENTENCES.
+L2b: Per-sentence embedding grounding check (zero LLM, Section 4.9).
+     Sentences whose cosine similarity to their cited chunk's text
+     falls below GROUNDING_THRESHOLD are downgraded in the L1 cascade
+     (approve -> escalate, escalate -> reject). Then majority-reject
+     re-tested on the updated cascade.
+L3: LLM judge (single gpt-4o-mini call). Only fires if L1, L2a, and
+    L2b all left the cascade non-majority-reject.
 
 Section 2.2 accounts for max 3 Critic LLM calls (once per outer loop);
 the cascade means the actual number is usually much lower.
+llm_calls_avoided (Section 3.1) increments by 1 whenever any L1/L2a/L2b
+layer short-circuits L3 — the primary metric for the cascade value
+story (Section 5.1 target: >=60% of Critic decisions resolved by
+Gamma+rules alone).
 """
 import json
 
@@ -26,6 +26,10 @@ from langchain_openai import ChatOpenAI
 
 from backend.state import AcademicResearchState, llm_call_update
 from evaluation.citation_check import check_citations
+from evaluation.citation_grounding import (
+    GROUNDING_THRESHOLD,
+    check_citation_grounding,
+)
 from evaluation.gamma_guardrail import GammaGuardrail
 
 LLM_MODEL = "gpt-4o-mini"
@@ -130,8 +134,8 @@ async def critic_node(state: AcademicResearchState) -> dict:
             "llm_calls_avoided": state["llm_calls_avoided"] + 1,
         }
 
-    # ── Layer 2: citation grounding ────────────────────────────────────
-    # check_citations strips dangling [X] markers as a repair pass (see
+    # ── Layer 2a: structural citation check ────────────────────────────
+    # check_citations strips dangling [N] markers as a repair pass (see
     # evaluation/citation_check.py). On pass, downstream sees the
     # sanitized draft; on fail, we still roll back to Writer with feedback
     # listing what was hallucinated so the retry has a chance to converge.
@@ -147,7 +151,29 @@ async def critic_node(state: AcademicResearchState) -> dict:
 
     sanitized_draft = citation_report.sanitized_draft or draft
 
-    # ── Layer 3: LLM judge (only if L1+L2 both passed) ─────────────────
+    # ── Layer 2b: per-sentence embedding grounding (Section 4.9) ──────
+    # Catches citation misattribution: structurally valid [N] pointing
+    # at a chunk whose content doesn't support the sentence's claim.
+    # Downgrades approve/escalate for ungrounded sentences; if the
+    # updated cascade becomes majority-reject, roll back with feedback
+    # naming the specific ungrounded sentences.
+    grounding_report = check_citation_grounding(
+        sanitized_draft, cascade_decisions, merged_chunks, guardrail.encoder
+    )
+    updated_cascade = grounding_report.updated_cascade
+    updated_reject_count = updated_cascade.count("reject")
+    if updated_reject_count > len(updated_cascade) / 2:
+        return {
+            **base_update,
+            "cascade_decisions": updated_cascade,
+            "status": "reviewing",
+            "critic_feedback": (
+                f"Citation grounding failed: {grounding_report.summary()}"
+            ),
+            "llm_calls_avoided": state["llm_calls_avoided"] + 1,
+        }
+
+    # ── Layer 3: LLM judge (only if L1, L2a, L2b all passed) ──────────
     # Judge sees chunks with the same 1-based [N] labels the Writer used
     # in the draft (Section 4.8) — otherwise it can't map "[3]" in the
     # draft to any specific evidence.
@@ -161,7 +187,7 @@ async def critic_node(state: AcademicResearchState) -> dict:
     return {
         **base_update,
         "draft": sanitized_draft,
-        "cascade_decisions": cascade_decisions,
+        "cascade_decisions": updated_cascade,
         "status": "approved" if approved else "reviewing",
         "critic_feedback": None if approved else f"LLM judge rejected: {verdict.get('reason', '')}",
         **llm_call_update(state),

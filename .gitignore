@@ -11,3 +11,6 @@ index/
 .chainlit/
 chainlit.md
 .files/
+
+# In-progress labeling artifacts — user manages these outside git
+experiments/results/cascade_labels_draft.csv
