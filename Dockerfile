@@ -31,12 +31,27 @@ COPY requirements.txt .
 # --no-cache-dir is intentionally REMOVED so pip actually populates the
 # cache; the mount is throwaway wrt the image so this doesn't bloat the
 # built image.
+# PyPI mirror override — the default files.pythonhosted.org CDN was
+# throttling this route to ~1 kB/s and terminating connections
+# mid-download, causing IncompleteRead on 6 MB wheels. Tsinghua's
+# mirror is a full pypi.org sync (updates every few minutes) and
+# typically serves 10-100x faster on Asia-Pacific routes. pypi.org is
+# kept as --extra-index-url so any package Tsinghua happens not to
+# have yet still resolves.
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG PIP_EXTRA_INDEX_URL=https://pypi.org/simple
+
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade --default-timeout=1000 --retries 10 pip \
+    pip install --upgrade --default-timeout=1000 --retries 10 \
+        --index-url ${PIP_INDEX_URL} \
+        --extra-index-url ${PIP_EXTRA_INDEX_URL} \
+        pip \
     && pip install --default-timeout=1000 --retries 10 \
         --index-url https://download.pytorch.org/whl/cpu \
         torch==2.12.1 \
     && pip install --default-timeout=1000 --retries 10 \
+        --index-url ${PIP_INDEX_URL} \
+        --extra-index-url ${PIP_EXTRA_INDEX_URL} \
         -r requirements.txt
 
 # Application source. tests/, scratchpad, and the built index are
