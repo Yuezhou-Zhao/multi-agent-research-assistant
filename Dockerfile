@@ -15,7 +15,19 @@ WORKDIR /app
 # requirements.txt copied separately so `docker build` reuses the pip
 # install layer whenever only source code changes.
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Two-step install to survive PyPI throttling on the ~400MB torch wheel:
+#   1. torch first, from PyTorch's own CPU-only index — the CPU wheel is
+#      ~200MB (vs the ~426MB CUDA-enabled one on PyPI) AND download.
+#      pytorch.org isn't behind the same throttle files.pythonhosted.org
+#      applies to bulk downloads. Empirically the earlier build slowed
+#      to 15 kB/s at the 213MB mark and timed out; this bypass fixes it.
+#   2. remaining requirements next, with default-timeout + retries bumped
+#      as a belt-and-suspenders for the smaller wheels.
+RUN pip install --no-cache-dir --default-timeout=1000 --retries 10 \
+        --index-url https://download.pytorch.org/whl/cpu \
+        torch==2.12.1 \
+    && pip install --no-cache-dir --default-timeout=1000 --retries 10 \
+        -r requirements.txt
 
 # Application source. tests/, scratchpad, and the built index are
 # excluded via .dockerignore — index/ is mounted as a volume in
