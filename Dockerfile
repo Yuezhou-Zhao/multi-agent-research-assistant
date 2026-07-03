@@ -32,7 +32,8 @@ COPY requirements.txt .
 # cache; the mount is throwaway wrt the image so this doesn't bloat the
 # built image.
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --default-timeout=1000 --retries 10 \
+    pip install --upgrade --default-timeout=1000 --retries 10 pip \
+    && pip install --default-timeout=1000 --retries 10 \
         --index-url https://download.pytorch.org/whl/cpu \
         torch==2.12.1 \
     && pip install --default-timeout=1000 --retries 10 \
