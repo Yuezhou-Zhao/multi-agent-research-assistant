@@ -23,10 +23,19 @@ COPY requirements.txt .
 #      to 15 kB/s at the 213MB mark and timed out; this bypass fixes it.
 #   2. remaining requirements next, with default-timeout + retries bumped
 #      as a belt-and-suspenders for the smaller wheels.
-RUN pip install --no-cache-dir --default-timeout=1000 --retries 10 \
+#
+# BuildKit cache mount: pip's HTTP cache is bind-mounted from the Docker
+# builder's persistent cache, so re-runs of this RUN step (after a build
+# interrupt, a network switch, or a requirements.txt tweak) reuse the
+# wheels pip already downloaded instead of re-fetching hundreds of MB.
+# --no-cache-dir is intentionally REMOVED so pip actually populates the
+# cache; the mount is throwaway wrt the image so this doesn't bloat the
+# built image.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --default-timeout=1000 --retries 10 \
         --index-url https://download.pytorch.org/whl/cpu \
         torch==2.12.1 \
-    && pip install --no-cache-dir --default-timeout=1000 --retries 10 \
+    && pip install --default-timeout=1000 --retries 10 \
         -r requirements.txt
 
 # Application source. tests/, scratchpad, and the built index are
