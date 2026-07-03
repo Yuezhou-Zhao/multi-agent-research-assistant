@@ -1,0 +1,900 @@
+{
+  "banner": "\u26a0\ufe0f  AI-DRAFTED LABELS, PENDING HUMAN REVIEW",
+  "current_threshold": 0.65,
+  "current": {
+    "threshold": 0.65,
+    "tp": 13,
+    "fp": 0,
+    "fn": 23,
+    "tn": 12,
+    "precision": 1.0,
+    "recall": 0.3611111111111111,
+    "f1": 0.5306122448979591
+  },
+  "best": {
+    "threshold": 0.8200000000000004,
+    "tp": 35,
+    "fp": 7,
+    "fn": 1,
+    "tn": 5,
+    "precision": 0.8333333333333334,
+    "recall": 0.9722222222222222,
+    "f1": 0.8974358974358975
+  },
+  "per_label_stats": {
+    "hallucinated": {
+      "n": 36,
+      "mean": 0.6734977612892786,
+      "median": 0.6752223968505859,
+      "min": 0.5078533887863159,
+      "max": 0.8484629392623901,
+      "stdev": 0.08390118403944488
+    },
+    "correct": {
+      "n": 12,
+      "mean": 0.7798300633827845,
+      "median": 0.7943437695503235,
+      "min": 0.6503832340240479,
+      "max": 0.888611912727356,
+      "stdev": 0.08223527899893845
+    },
+    "uncertain": {
+      "n": 10,
+      "mean": 0.7319035947322845,
+      "median": 0.7416565120220184,
+      "min": 0.5916880369186401,
+      "max": 0.8620583415031433,
+      "stdev": 0.08034734202664012
+    }
+  },
+  "rows": [
+    {
+      "query_idx": 1,
+      "sentence_idx": 1,
+      "claude_suggested_label": "uncertain",
+      "cited_ids": [],
+      "sim": null,
+      "skipped_reason": "no citation in sentence"
+    },
+    {
+      "query_idx": 1,
+      "sentence_idx": 2,
+      "sentence": "This decoupling allows the use of short, contextually rich knowledge chunks to improve the retrieval accuracy while simultaneously addressing the specific requirements of the generation process [2403.15450v1] [2602.07739v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2403.15450v1",
+        "2602.07739v2"
+      ],
+      "resolved_ids": [
+        "2403.15450v1",
+        "2602.07739v2"
+      ],
+      "sim": 0.7623425722122192
+    },
+    {
+      "query_idx": 1,
+      "sentence_idx": 3,
+      "sentence": "Additionally, the framework incorporates an adaptive prompt tuning method, which tailors the retrieval model for better alignment with the needs of the generation step, thereby improving the efficiency of the overall process [2403.15450v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2403.15450v1"
+      ],
+      "resolved_ids": [
+        "2403.15450v1"
+      ],
+      "sim": 0.6478698253631592
+    },
+    {
+      "query_idx": 1,
+      "sentence_idx": 4,
+      "sentence": "By minimizing the semantic gap between large language models (LLMs) and retrievers, HyDE ensures that the information retrieved is more relevant and better integrated into the generation phase, thus enhancing the coherence and factual consistency of the output [2207.03030v1] [2606.28358v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2207.03030v1",
+        "2606.28358v1"
+      ],
+      "resolved_ids": [
+        "2207.03030v1",
+        "2606.28358v1"
+      ],
+      "sim": 0.7233622074127197
+    },
+    {
+      "query_idx": 1,
+      "sentence_idx": 5,
+      "sentence": "Furthermore, frameworks like LoRAG highlight the importance of iterative refinement in RAG, demonstrating that continued engagement with retrieved information can further elevate the quality of generated text [2411.16133v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2411.16133v2"
+      ],
+      "resolved_ids": [
+        "2411.16133v2"
+      ],
+      "sim": 0.6185919642448425
+    },
+    {
+      "query_idx": 1,
+      "sentence_idx": 6,
+      "sentence": "Overall, these innovations suggest that HyDE significantly advances the capabilities of RAG systems in producing high-quality academic content [2403.15450v1] [2411.16133v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2403.15450v1",
+        "2411.16133v2"
+      ],
+      "resolved_ids": [
+        "2403.15450v1",
+        "2411.16133v2"
+      ],
+      "sim": 0.5078533887863159
+    },
+    {
+      "query_idx": 2,
+      "sentence_idx": 1,
+      "claude_suggested_label": "correct",
+      "cited_ids": [],
+      "sim": null,
+      "skipped_reason": "no citation in sentence"
+    },
+    {
+      "query_idx": 2,
+      "sentence_idx": 2,
+      "sentence": "This mechanism operates by distributing attention across various tokens, enabling the model to focus on relevant parts of the input while ignoring less pertinent information [2411.09111v8].",
+      "claude_suggested_label": "uncertain",
+      "cited_ids": [
+        "2411.09111v8"
+      ],
+      "resolved_ids": [
+        "2411.09111v8"
+      ],
+      "sim": 0.695605456829071
+    },
+    {
+      "query_idx": 2,
+      "sentence_idx": 3,
+      "sentence": "Recent advancements have introduced sparse attention mechanisms, which optimize the attention process by concentrating on a limited number of relevant tokens, thereby reducing computational costs and improving efficiency [2604.10697v1] [2311.04589v3].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2604.10697v1",
+        "2311.04589v3"
+      ],
+      "resolved_ids": [
+        "2604.10697v1",
+        "2311.04589v3"
+      ],
+      "sim": 0.725222110748291
+    },
+    {
+      "query_idx": 2,
+      "sentence_idx": 4,
+      "sentence": "Additionally, attention sinks have been identified as significant indicators of model behavior, particularly in detecting hallucinations, as they highlight tokens that receive disproportionate attention during generation [2501.09997v3].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2501.09997v3"
+      ],
+      "resolved_ids": [
+        "2501.09997v3"
+      ],
+      "sim": 0.6999499201774597
+    },
+    {
+      "query_idx": 2,
+      "sentence_idx": 5,
+      "sentence": "The interplay between attention mechanisms and chain-of-thought reasoning has also been explored, revealing that these mechanisms can enhance the expressivity and performance of transformers in complex reasoning tasks [2312.12141v4].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2312.12141v4"
+      ],
+      "resolved_ids": [
+        "2312.12141v4"
+      ],
+      "sim": 0.7356979846954346
+    },
+    {
+      "query_idx": 2,
+      "sentence_idx": 6,
+      "sentence": "Overall, the attention mechanism is fundamental to the functionality of transformer models, influencing both their performance and computational efficiency [2312.00249v2] [2411.16133v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2312.00249v2",
+        "2411.16133v2"
+      ],
+      "resolved_ids": [
+        "2312.00249v2",
+        "2411.16133v2"
+      ],
+      "sim": 0.5673357248306274
+    },
+    {
+      "query_idx": 3,
+      "sentence_idx": 1,
+      "sentence": "Chain of Thought (CoT) reasoning enhances language model performance by encouraging step-by-step logical reasoning, which significantly improves the ability to tackle complex tasks [2406.09136v2] [2509.00190v2].",
+      "claude_suggested_label": "uncertain",
+      "cited_ids": [
+        "2406.09136v2",
+        "2509.00190v2"
+      ],
+      "resolved_ids": [
+        "2406.09136v2",
+        "2509.00190v2"
+      ],
+      "sim": 0.8620583415031433
+    },
+    {
+      "query_idx": 3,
+      "sentence_idx": 2,
+      "sentence": "This method allows models to generate a series of intermediate reasoning steps, leading to better performance on various reasoning benchmarks, including arithmetic and commonsense tasks [2509.00190v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2509.00190v2"
+      ],
+      "resolved_ids": [
+        "2509.00190v2"
+      ],
+      "sim": 0.5902224183082581
+    },
+    {
+      "query_idx": 3,
+      "sentence_idx": 3,
+      "sentence": "Additionally, the introduction of frameworks like Flow Chain of Thought (Flow CoT) enables recursive inference, refining cognitive states across iterations without the need for extensive pretraining [2406.09136v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2406.09136v2"
+      ],
+      "resolved_ids": [
+        "2406.09136v2"
+      ],
+      "sim": 0.7355305552482605
+    },
+    {
+      "query_idx": 3,
+      "sentence_idx": 4,
+      "sentence": "Furthermore, leveraging reasoning patterns can enhance CoT prompting by selecting diverse demonstrations that mitigate noise and improve interpretability [2502.12134v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2502.12134v2"
+      ],
+      "resolved_ids": [
+        "2502.12134v2"
+      ],
+      "sim": 0.6568578481674194
+    },
+    {
+      "query_idx": 3,
+      "sentence_idx": 5,
+      "sentence": "The effectiveness of CoT is also supported by the Representation-of-Thought (RoT) framework, which enhances robustness and control over the reasoning process [2407.03600v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2407.03600v2"
+      ],
+      "resolved_ids": [
+        "2407.03600v2"
+      ],
+      "sim": 0.6246336102485657
+    },
+    {
+      "query_idx": 3,
+      "sentence_idx": 6,
+      "sentence": "Lastly, contrastive chain-of-thought prompting introduces both valid and invalid reasoning demonstrations, guiding models to avoid mistakes and improve generalization [2506.03673v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2506.03673v1"
+      ],
+      "resolved_ids": [
+        "2506.03673v1"
+      ],
+      "sim": 0.7089391946792603
+    },
+    {
+      "query_idx": 3,
+      "sentence_idx": 7,
+      "sentence": "Overall, these advancements illustrate how structured reasoning paradigms can significantly elevate the reasoning capabilities of language models [2201.11903v6] [2404.14812v2].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2201.11903v6",
+        "2404.14812v2"
+      ],
+      "resolved_ids": [
+        "2201.11903v6",
+        "2404.14812v2"
+      ],
+      "sim": 0.7819139361381531
+    },
+    {
+      "query_idx": 4,
+      "sentence_idx": 1,
+      "claude_suggested_label": "correct",
+      "cited_ids": [],
+      "sim": null,
+      "skipped_reason": "no citation in sentence"
+    },
+    {
+      "query_idx": 4,
+      "sentence_idx": 2,
+      "sentence": "For instance, FG-PRM categorizes hallucinations into types and implements a fine-grained detection mechanism that evaluates each reasoning step, thus enhancing understanding and mitigation of the issue [2502.13622v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2502.13622v2"
+      ],
+      "resolved_ids": [
+        "2502.13622v2"
+      ],
+      "sim": 0.6747851967811584
+    },
+    {
+      "query_idx": 4,
+      "sentence_idx": 3,
+      "sentence": "In parallel, the Chain of Natural Language Inference (CoNLI) framework offers an effective method for detecting ungrounded hallucinations while improving text quality through post-editing techniques, showcasing its plug-and-play capability in real-world applications [2508.01862v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2508.01862v1"
+      ],
+      "resolved_ids": [
+        "2508.01862v1"
+      ],
+      "sim": 0.8484629392623901
+    },
+    {
+      "query_idx": 4,
+      "sentence_idx": 4,
+      "sentence": "Alternatively, the HIDE method employs a statistical approach that analyzes the decoupling of internal representations to detect hallucinations efficiently, achieving notable performance improvements over traditional multi-pass methods [2506.17748v1].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2506.17748v1"
+      ],
+      "resolved_ids": [
+        "2506.17748v1"
+      ],
+      "sim": 0.7598997950553894
+    },
+    {
+      "query_idx": 4,
+      "sentence_idx": 5,
+      "sentence": "Additionally, the MIND framework utilizes the internal states of LLMs for real-time hallucination detection, which allows for unsupervised operation without the need for extensive manual data labeling [2401.06855v4].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2401.06855v4"
+      ],
+      "resolved_ids": [
+        "2401.06855v4"
+      ],
+      "sim": 0.6832006573677063
+    },
+    {
+      "query_idx": 4,
+      "sentence_idx": 6,
+      "sentence": "The theoretical exploration of hallucination detection frameworks highlights the necessity of expert-labeled examples to enhance the reliability of detection systems, indicating that such feedback substantially improves performance [2504.17004v2].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2504.17004v2"
+      ],
+      "resolved_ids": [
+        "2504.17004v2"
+      ],
+      "sim": 0.8414013385772705
+    },
+    {
+      "query_idx": 4,
+      "sentence_idx": 7,
+      "sentence": "Lastly, the Hughes Hallucination Evaluation Model (HHEM) exemplifies a lightweight classification method that not only improves efficiency but also maintains high detection accuracy across a variety of tasks [2409.11353v3].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2409.11353v3"
+      ],
+      "resolved_ids": [
+        "2409.11353v3"
+      ],
+      "sim": 0.6745969653129578
+    },
+    {
+      "query_idx": 4,
+      "sentence_idx": 8,
+      "claude_suggested_label": "correct",
+      "cited_ids": [],
+      "sim": null,
+      "skipped_reason": "no citation in sentence"
+    },
+    {
+      "query_idx": 5,
+      "sentence_idx": 1,
+      "claude_suggested_label": "correct",
+      "cited_ids": [],
+      "sim": null,
+      "skipped_reason": "no citation in sentence"
+    },
+    {
+      "query_idx": 5,
+      "sentence_idx": 2,
+      "sentence": "The use of contextualized language models in dense retrieval allows for improved search effectiveness, particularly when comparing the performance of dense retrieval methods against BM25 baselines [2108.06279v2].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2108.06279v2"
+      ],
+      "resolved_ids": [
+        "2108.06279v2"
+      ],
+      "sim": 0.888611912727356
+    },
+    {
+      "query_idx": 5,
+      "sentence_idx": 3,
+      "sentence": "Research indicates that dense retrieval models, especially those utilizing multiple representations, can outperform BM25, particularly for complex queries and those that are challenging for BM25 to handle [2108.06279v2].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2108.06279v2"
+      ],
+      "resolved_ids": [
+        "2108.06279v2"
+      ],
+      "sim": 0.8252232670783997
+    },
+    {
+      "query_idx": 5,
+      "sentence_idx": 4,
+      "sentence": "Furthermore, dense retrieval approaches, such as the Mixture-of-Experts framework in DESIRE-ME, have demonstrated enhanced adaptability and performance across diverse query types, achieving notable improvements in metrics like NDCG@10 and P@1 compared to traditional methods [2601.06196v3] [2410.14609v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2601.06196v3",
+        "2410.14609v2"
+      ],
+      "resolved_ids": [
+        "2601.06196v3",
+        "2410.14609v2"
+      ],
+      "sim": 0.6769946217536926
+    },
+    {
+      "query_idx": 5,
+      "sentence_idx": 5,
+      "sentence": "However, it is important to note that dense retrieval models can struggle with noisy input, which may affect their performance relative to BM25 in real-world applications [2411.16133v2].",
+      "claude_suggested_label": "uncertain",
+      "cited_ids": [
+        "2411.16133v2"
+      ],
+      "resolved_ids": [
+        "2411.16133v2"
+      ],
+      "sim": 0.6419473886489868
+    },
+    {
+      "query_idx": 5,
+      "sentence_idx": 6,
+      "sentence": "Overall, while BM25 remains a robust baseline, the advancements in dense passage retrieval highlight its growing importance and effectiveness in the field of open-domain QA [2108.06279v2] [2601.06196v3].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2108.06279v2",
+        "2601.06196v3"
+      ],
+      "resolved_ids": [
+        "2108.06279v2",
+        "2601.06196v3"
+      ],
+      "sim": 0.7881941795349121
+    },
+    {
+      "query_idx": 6,
+      "sentence_idx": 1,
+      "sentence": "Retrieval-augmented generation (RAG) is a technique designed to enhance large language models (LLMs) by integrating external knowledge in real-time during text generation, thereby addressing issues like hallucinations and factual inaccuracies [2406.13249v2] [2411.16133v2].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2406.13249v2",
+        "2411.16133v2"
+      ],
+      "resolved_ids": [
+        "2406.13249v2",
+        "2411.16133v2"
+      ],
+      "sim": 0.8737175464630127
+    },
+    {
+      "query_idx": 6,
+      "sentence_idx": 2,
+      "sentence": "The RAG process typically involves retrieving relevant knowledge chunks before they are incorporated into the generation phase, although the effectiveness of this method heavily relies on the quality and specificity of the input query, as even small changes can significantly impact retrieval accuracy [2406.13249v2] [2504.10529v1].",
+      "claude_suggested_label": "uncertain",
+      "cited_ids": [
+        "2406.13249v2",
+        "2504.10529v1"
+      ],
+      "resolved_ids": [
+        "2406.13249v2",
+        "2504.10529v1"
+      ],
+      "sim": 0.7750144004821777
+    },
+    {
+      "query_idx": 6,
+      "sentence_idx": 3,
+      "sentence": "Traditional RAG systems face limitations, such as treating knowledge chunks uniformly for both retrieval and generation, which can reduce efficiency and effectiveness [2504.10529v1].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2504.10529v1"
+      ],
+      "resolved_ids": [
+        "2504.10529v1"
+      ],
+      "sim": 0.6503832340240479
+    },
+    {
+      "query_idx": 6,
+      "sentence_idx": 4,
+      "sentence": "Newer frameworks, like R\u00b2AG, aim to mitigate these issues by incorporating nuanced retrieval features to create a more coherent generation process, ultimately bridging gaps between LLMs and the information retrieved [2309.15217v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2309.15217v2"
+      ],
+      "resolved_ids": [
+        "2309.15217v2"
+      ],
+      "sim": 0.6448686122894287
+    },
+    {
+      "query_idx": 6,
+      "sentence_idx": 5,
+      "sentence": "Moreover, active retrieval strategies, such as FLARE, allow models to continually gather relevant information during text generation, enhancing the performance for more complex tasks that require sustained knowledge integration [2406.16167v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2406.16167v1"
+      ],
+      "resolved_ids": [
+        "2406.16167v1"
+      ],
+      "sim": 0.7053602933883667
+    },
+    {
+      "query_idx": 6,
+      "sentence_idx": 6,
+      "sentence": "As RAG continues to evolve, its modular architecture facilitates the incorporation of external knowledge without necessitating substantial changes to the underlying model architecture [2411.16133v2].",
+      "claude_suggested_label": "uncertain",
+      "cited_ids": [
+        "2411.16133v2"
+      ],
+      "resolved_ids": [
+        "2411.16133v2"
+      ],
+      "sim": 0.5916880369186401
+    },
+    {
+      "query_idx": 6,
+      "sentence_idx": 7,
+      "sentence": "This ongoing development underscores the importance of addressing the inherent challenges in retrieval processes to optimize the generation outcomes [2404.07220v2] [2411.16133v2].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2404.07220v2",
+        "2411.16133v2"
+      ],
+      "resolved_ids": [
+        "2404.07220v2",
+        "2411.16133v2"
+      ],
+      "sim": 0.6746204495429993
+    },
+    {
+      "query_idx": 7,
+      "sentence_idx": 1,
+      "claude_suggested_label": "correct",
+      "cited_ids": [],
+      "sim": null,
+      "skipped_reason": "no citation in sentence"
+    },
+    {
+      "query_idx": 7,
+      "sentence_idx": 2,
+      "sentence": "For instance, the introduction of metacognitive frameworks like MetaRAG allows models to critique and refine their reasoning, which is significantly bolstered by the use of rerankers that optimize the selection of retrieved documents [2411.16133v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2411.16133v2"
+      ],
+      "resolved_ids": [
+        "2411.16133v2"
+      ],
+      "sim": 0.6029148697853088
+    },
+    {
+      "query_idx": 7,
+      "sentence_idx": 3,
+      "sentence": "Additionally, the Blended RAG method employs hybrid query strategies and semantic search techniques to achieve better retrieval results, demonstrating that effective reranking can set new benchmarks in information retrieval [2404.07220v2].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2404.07220v2"
+      ],
+      "resolved_ids": [
+        "2404.07220v2"
+      ],
+      "sim": 0.8067736029624939
+    },
+    {
+      "query_idx": 7,
+      "sentence_idx": 4,
+      "sentence": "Furthermore, the HeteRAG framework decouples the representations of knowledge chunks for retrieval and generation, which can lead to improved effectiveness and efficiency through better reranking of relevant information [2406.13249v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2406.13249v2"
+      ],
+      "resolved_ids": [
+        "2406.13249v2"
+      ],
+      "sim": 0.7563648223876953
+    },
+    {
+      "query_idx": 7,
+      "sentence_idx": 5,
+      "sentence": "By addressing the challenges of redundancy and ordering in retrieved chunks, reranking strategies can ensure that only the most pertinent information is presented to the language model, thereby enhancing overall performance [2406.16167v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2406.16167v1"
+      ],
+      "resolved_ids": [
+        "2406.16167v1"
+      ],
+      "sim": 0.752842903137207
+    },
+    {
+      "query_idx": 7,
+      "sentence_idx": 6,
+      "sentence": "Overall, these advancements in reranking contribute to a more robust and accurate retrieval process within RAG systems, ultimately leading to higher quality outputs [2411.16133v2] [2406.16167v1].",
+      "claude_suggested_label": "uncertain",
+      "cited_ids": [
+        "2411.16133v2",
+        "2406.16167v1"
+      ],
+      "resolved_ids": [
+        "2411.16133v2",
+        "2406.16167v1"
+      ],
+      "sim": 0.6883105039596558
+    },
+    {
+      "query_idx": 8,
+      "sentence_idx": 1,
+      "claude_suggested_label": "correct",
+      "cited_ids": [],
+      "sim": null,
+      "skipped_reason": "no citation in sentence"
+    },
+    {
+      "query_idx": 8,
+      "sentence_idx": 2,
+      "sentence": "Research indicates that query expansion consistently outperforms a baseline without expansion, demonstrating its value in improving retrieval outcomes [2406.16013v3].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2406.16013v3"
+      ],
+      "resolved_ids": [
+        "2406.16013v3"
+      ],
+      "sim": 0.6882877349853516
+    },
+    {
+      "query_idx": 8,
+      "sentence_idx": 3,
+      "sentence": "By augmenting the original query with additional metadata or user-related features, systems can address the limitations posed by short user queries that might not fully express the information need [2202.00373v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2202.00373v2"
+      ],
+      "resolved_ids": [
+        "2202.00373v2"
+      ],
+      "sim": 0.5592533946037292
+    },
+    {
+      "query_idx": 8,
+      "sentence_idx": 4,
+      "sentence": "Moreover, the variability in user-generated queries highlights the necessity for robust retrieval mechanisms, as traditional models can struggle with minor changes in queries [2504.10529v1] [2603.01417v1].",
+      "claude_suggested_label": "uncertain",
+      "cited_ids": [
+        "2504.10529v1",
+        "2603.01417v1"
+      ],
+      "resolved_ids": [
+        "2504.10529v1",
+        "2603.01417v1"
+      ],
+      "sim": 0.7488173842430115
+    },
+    {
+      "query_idx": 8,
+      "sentence_idx": 5,
+      "sentence": "Incorporating feedback mechanisms and context-sensitive query rewrites can further refine the query, aligning it more closely with the stylistic and semantic characteristics of relevant documents [2504.10529v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2504.10529v1"
+      ],
+      "resolved_ids": [
+        "2504.10529v1"
+      ],
+      "sim": 0.6615559458732605
+    },
+    {
+      "query_idx": 8,
+      "sentence_idx": 6,
+      "sentence": "Overall, these methods underscore the significant role of query expansion in tailoring search processes to better meet user intents and enhance the effectiveness of retrieval systems [2406.16013v3] [2202.00373v2].",
+      "claude_suggested_label": "uncertain",
+      "cited_ids": [
+        "2406.16013v3",
+        "2202.00373v2"
+      ],
+      "resolved_ids": [
+        "2406.16013v3",
+        "2202.00373v2"
+      ],
+      "sim": 0.7344956398010254
+    },
+    {
+      "query_idx": 9,
+      "sentence_idx": 1,
+      "sentence": "Embedding models represent semantic similarity between text passages by establishing a joint embedding space that allows for consistent representations of text, which is crucial for computing similarity scores effectively [2403.17998v1].",
+      "claude_suggested_label": "uncertain",
+      "cited_ids": [
+        "2403.17998v1"
+      ],
+      "resolved_ids": [
+        "2403.17998v1"
+      ],
+      "sim": 0.8146384954452515
+    },
+    {
+      "query_idx": 9,
+      "sentence_idx": 2,
+      "sentence": "For instance, the T-MASS method enriches text embeddings by modeling them as stochastic embeddings, which enhances their semantic range and improves retrieval accuracy [2403.17998v1].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2403.17998v1"
+      ],
+      "resolved_ids": [
+        "2403.17998v1"
+      ],
+      "sim": 0.8561180830001831
+    },
+    {
+      "query_idx": 9,
+      "sentence_idx": 3,
+      "sentence": "Additionally, approaches like Poly-Vector Retrieval assign multiple distinct embeddings to capture both content and reference, thereby addressing the challenges of traditional methods that rely solely on semantic embeddings [2507.18518v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2507.18518v2"
+      ],
+      "resolved_ids": [
+        "2507.18518v2"
+      ],
+      "sim": 0.6756595969200134
+    },
+    {
+      "query_idx": 9,
+      "sentence_idx": 4,
+      "sentence": "Furthermore, generative models have been shown to capture nuanced semantic information, leading to improved similarity search results in specific domains, such as biomedicine [2606.21535v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2606.21535v1"
+      ],
+      "resolved_ids": [
+        "2606.21535v1"
+      ],
+      "sim": 0.6539438366889954
+    },
+    {
+      "query_idx": 9,
+      "sentence_idx": 5,
+      "sentence": "Wave-Based Semantic Memory introduces a novel framework that utilizes wave patterns to represent knowledge, allowing for more expressive semantic similarity through resonance-based retrieval [1802.06466v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "1802.06466v1"
+      ],
+      "resolved_ids": [
+        "1802.06466v1"
+      ],
+      "sim": 0.7471833229064941
+    },
+    {
+      "query_idx": 9,
+      "sentence_idx": 6,
+      "sentence": "This method preserves both amplitude and phase information, which enhances the model's ability to handle complex semantic relationships [1802.06466v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "1802.06466v1"
+      ],
+      "resolved_ids": [
+        "1802.06466v1"
+      ],
+      "sim": 0.5955554246902466
+    },
+    {
+      "query_idx": 9,
+      "sentence_idx": 7,
+      "sentence": "Overall, these diverse approaches highlight the evolving strategies in embedding models to effectively represent and retrieve semantically similar text passages [2403.17998v1] [2507.18518v2] [2606.21535v1] [1802.06466v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2403.17998v1",
+        "2507.18518v2",
+        "2606.21535v1",
+        "1802.06466v1"
+      ],
+      "resolved_ids": [
+        "2403.17998v1",
+        "2507.18518v2",
+        "2606.21535v1",
+        "1802.06466v1"
+      ],
+      "sim": 0.8115323781967163
+    },
+    {
+      "query_idx": 10,
+      "sentence_idx": 1,
+      "sentence": "Self-consistency decoding is a strategy that enhances the performance of language models by sampling multiple reasoning paths before selecting the most consistent answer, rather than depending solely on the greedy decoding approach [2311.01740v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2311.01740v2"
+      ],
+      "resolved_ids": [
+        "2311.01740v2"
+      ],
+      "sim": 0.7920007705688477
+    },
+    {
+      "query_idx": 10,
+      "sentence_idx": 2,
+      "sentence": "This method is rooted in the understanding that complex reasoning tasks may have multiple valid approaches, each converging on the correct solution [2311.01740v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2311.01740v2"
+      ],
+      "resolved_ids": [
+        "2311.01740v2"
+      ],
+      "sim": 0.5448963046073914
+    },
+    {
+      "query_idx": 10,
+      "sentence_idx": 3,
+      "sentence": "Empirical evaluations indicate that this approach significantly boosts performance on various arithmetic and commonsense reasoning benchmarks, highlighting its effectiveness [2311.01740v2].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2311.01740v2"
+      ],
+      "resolved_ids": [
+        "2311.01740v2"
+      ],
+      "sim": 0.5600831508636475
+    },
+    {
+      "query_idx": 10,
+      "sentence_idx": 4,
+      "sentence": "Moreover, self-consistency has been shown to integrate well with other methodologies, such as diffusion models, which can further improve reasoning capabilities and self-correction in these systems [2403.15450v1].",
+      "claude_suggested_label": "hallucinated",
+      "cited_ids": [
+        "2403.15450v1"
+      ],
+      "resolved_ids": [
+        "2403.15450v1"
+      ],
+      "sim": 0.5312598943710327
+    },
+    {
+      "query_idx": 10,
+      "sentence_idx": 5,
+      "sentence": "The focus on consistency also opens avenues for detecting hallucinations in language models, as it underscores the importance of verifying responses against multiple generated outputs [2203.11171v4].",
+      "claude_suggested_label": "correct",
+      "cited_ids": [
+        "2203.11171v4"
+      ],
+      "resolved_ids": [
+        "2203.11171v4"
+      ],
+      "sim": 0.7110098600387573
+    },
+    {
+      "query_idx": 10,
+      "sentence_idx": 6,
+      "sentence": "Thus, self-consistency can be seen as a critical component in the development of more reliable and robust language modeling techniques [2311.01740v2] [2203.11171v4].",
+      "claude_suggested_label": "uncertain",
+      "cited_ids": [
+        "2311.01740v2",
+        "2203.11171v4"
+      ],
+      "resolved_ids": [
+        "2311.01740v2",
+        "2203.11171v4"
+      ],
+      "sim": 0.7664602994918823
+    }
+  ]
+}
