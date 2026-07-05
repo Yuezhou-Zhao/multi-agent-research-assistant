@@ -17,3 +17,7 @@ experiments/results/cascade_labels_draft.csv
 
 # Docker build transcript (tee output, regenerable)
 build.log
+
+# QLoRA data-prep generated artifacts (regenerable; the human-reviewed
+# eval_spotcheck.csv is the exception — force-add it when filled in)
+experiments/qlora_supervisor/data/
