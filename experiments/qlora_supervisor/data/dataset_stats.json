@@ -1,0 +1,40 @@
+{
+  "train": {
+    "n": 642,
+    "label_model": "gpt-4o-mini",
+    "route_distribution": {
+      "arxiv": 436,
+      "web": 149,
+      "both": 57
+    },
+    "intended_category_distribution": {
+      "arxiv_only": 138,
+      "web_only": 169,
+      "both": 178,
+      "ambiguous": 157
+    }
+  },
+  "eval": {
+    "n": 130,
+    "label_model": "qwen3.5-397b-a17b",
+    "route_distribution": {
+      "arxiv": 75,
+      "web": 36,
+      "both": 19
+    },
+    "intended_category_distribution": {
+      "arxiv_only": 22,
+      "web_only": 37,
+      "both": 42,
+      "ambiguous": 29
+    }
+  },
+  "spotcheck_n": 20,
+  "independence": {
+    "generator": "qwen3.5-397b-a17b",
+    "train_labeler": "gpt-4o-mini",
+    "eval_labeler": "qwen3.5-397b-a17b",
+    "train_eval_disjoint": true,
+    "dedup_cosine_threshold": 0.92
+  }
+}
