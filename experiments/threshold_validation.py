@@ -1,40 +1,27 @@
-"""Preliminary threshold validation (Section 4.9).
+"""Threshold validation for the L2b citation-grounding check (Section 4.9).
 
-Purpose: use the AI-drafted `claude_suggested_label` from
-`experiments/results/cascade_labels_draft.csv` to check whether the
-GROUNDING_THRESHOLD = 0.65 empirically picked in
-evaluation/citation_grounding.py actually separates the
-labeled-hallucinated pairs from the labeled-correct pairs. This is a
-FAST feedback loop to catch a wildly wrong threshold BEFORE the human
-review of labels comes back.
+Sweeps the GROUNDING_THRESHOLD in evaluation/citation_grounding.py against
+labeled cascade sentences: does the embedding-grounding similarity actually
+separate hallucinated (misattributed) citations from correct ones, and what
+threshold maximizes F1?
 
-IMPORTANT — every output from this script (Markdown, JSON, console)
-is prefixed with
-
-    ⚠️  AI-DRAFTED LABELS, PENDING HUMAN REVIEW
-
-so the number that goes into Section 4.9's final writeup and the
-README is NOT mistaken for the finalized human-reviewed number.
+Two label sources (--source):
+  final   (default) — the human-reviewed `label` column in
+                      experiments/results/cascade_labels.csv. THESE are the
+                      numbers that go into Section 4.9 + the README.
+  aidraft            — the AI-drafted `claude_suggested_label` in
+                      cascade_labels_draft.csv. Was the fast pre-review
+                      feedback loop; output is banner-marked as such and
+                      written to *_aidraft.md so it can't be mistaken for
+                      the final number.
 
 Method:
-  1. For each labeled row (sentence + arxiv-id-in-brackets citations):
-     - Parse the [XXXX.XXXXXvY] markers out of the sentence text.
-     - Look up each cited paper's title + summary from the FAISS index
-       metadata (rag/indexer.py's paper_by_id).
-     - Compute cosine_sim(encode(sentence), centroid(encode(cited_chunks))).
-  2. Bucket sims by claude_suggested_label
-     (hallucinated / correct / uncertain).
-  3. Report:
-     - Per-bucket sim distribution (n, mean, median, min, max).
-     - Confusion matrix at threshold=0.65 (would L2b downgrade each
-       label bucket?).
-     - Suggested threshold range that maximizes separation between
-       hallucinated and correct.
-     - Save results/threshold_validation.md + .json.
-
-Blocked-on note in output: this analysis is only as trustworthy as
-the AI drafter; the number in Section 4.9's final writeup MUST come
-from the finalized human-reviewed cascade_labels.csv.
+  1. Parse [XXXX.XXXXXvY] arxiv ids out of each labeled sentence.
+  2. Look up each cited paper's title+summary from the FAISS index metadata.
+  3. sim = cosine(encode(sentence), centroid(encode(cited_chunks))).
+  4. Bucket sims by the chosen label column; report per-bucket distribution,
+     confusion at the current GROUNDING_THRESHOLD, and the F1-optimal sweep.
+  5. Save results/threshold_validation{,_aidraft}.md + .json.
 """
 import csv
 import json
@@ -54,18 +41,21 @@ if str(_REPO_ROOT) not in sys.path:
 from rag.indexer import load_index
 
 RESULTS_DIR = _REPO_ROOT / "experiments" / "results"
-LABELS_PATH = RESULTS_DIR / "cascade_labels_draft.csv"
-OUT_MD = RESULTS_DIR / "threshold_validation.md"
-OUT_JSON = RESULTS_DIR / "threshold_validation.json"
 
 # Matches arxiv ids inside brackets: "[2403.15450v1]", "[2504.10529v1]".
 _ARXIV_ID_RE = re.compile(r"\[(\d{4}\.\d{4,5}(?:v\d+)?)\]")
 
-BANNER = "⚠️  AI-DRAFTED LABELS, PENDING HUMAN REVIEW"
+# Set in main() from CLI args (default: the human-reviewed final labels).
+LABEL_COL = "label"
+LABELS_PATH = RESULTS_DIR / "cascade_labels.csv"
+OUT_MD = RESULTS_DIR / "threshold_validation.md"
+OUT_JSON = RESULTS_DIR / "threshold_validation.json"
+BANNER = "FINAL — human-reviewed labels"
 
 
 def load_labeled_rows():
-    with open(LABELS_PATH) as f:
+    # utf-8-sig tolerates a BOM; the file is normalized UTF-8.
+    with open(LABELS_PATH, encoding="utf-8-sig") as f:
         return list(csv.DictReader(f))
 
 
@@ -132,7 +122,7 @@ def _confusion_at_threshold(rows_with_sims: list[dict], threshold: float) -> dic
     for r in rows_with_sims:
         if r["sim"] is None:
             continue
-        label = r["claude_suggested_label"]
+        label = r["label"]
         predicted_hallucinated = r["sim"] < threshold
         if label == "hallucinated":
             if predicted_hallucinated:
@@ -173,6 +163,29 @@ def _suggest_threshold(rows_with_sims: list[dict]) -> tuple[float, dict]:
 
 
 def main() -> int:
+    import argparse
+
+    global LABEL_COL, LABELS_PATH, OUT_MD, OUT_JSON, BANNER
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--source", choices=["final", "aidraft"], default="final",
+        help="'final' = human-reviewed cascade_labels.csv (label col); "
+             "'aidraft' = cascade_labels_draft.csv (claude_suggested_label)",
+    )
+    args = parser.parse_args()
+    if args.source == "aidraft":
+        LABEL_COL = "claude_suggested_label"
+        LABELS_PATH = RESULTS_DIR / "cascade_labels_draft.csv"
+        OUT_MD = RESULTS_DIR / "threshold_validation_aidraft.md"
+        OUT_JSON = RESULTS_DIR / "threshold_validation_aidraft.json"
+        BANNER = "⚠️  AI-DRAFTED LABELS, PENDING HUMAN REVIEW"
+    else:
+        LABEL_COL = "label"
+        LABELS_PATH = RESULTS_DIR / "cascade_labels.csv"
+        OUT_MD = RESULTS_DIR / "threshold_validation.md"
+        OUT_JSON = RESULTS_DIR / "threshold_validation.json"
+        BANNER = "FINAL — human-reviewed labels"
+
     encoder = SentenceTransformer("BAAI/bge-small-en-v1.5")
     _, metadata = load_index()
     paper_by_id: dict = metadata["paper_by_id"]
@@ -193,7 +206,7 @@ def main() -> int:
                 {
                     "query_idx": int(row["query_idx"]),
                     "sentence_idx": int(row["sentence_idx"]),
-                    "claude_suggested_label": row["claude_suggested_label"],
+                    "label": row[LABEL_COL],
                     "cited_ids": [],
                     "sim": None,
                     "skipped_reason": "no citation in sentence",
@@ -207,7 +220,7 @@ def main() -> int:
                 {
                     "query_idx": int(row["query_idx"]),
                     "sentence_idx": int(row["sentence_idx"]),
-                    "claude_suggested_label": row["claude_suggested_label"],
+                    "label": row[LABEL_COL],
                     "cited_ids": cited_ids,
                     "sim": None,
                     "skipped_reason": "no cited id resolves to indexed paper",
@@ -220,7 +233,7 @@ def main() -> int:
                 "query_idx": int(row["query_idx"]),
                 "sentence_idx": int(row["sentence_idx"]),
                 "sentence": sentence,
-                "claude_suggested_label": row["claude_suggested_label"],
+                "label": row[LABEL_COL],
                 "cited_ids": cited_ids,
                 "resolved_ids": [c["id"] for c in chunks],
                 "sim": sim,
@@ -238,7 +251,7 @@ def main() -> int:
     for r in rows_with_sims:
         if r["sim"] is None:
             continue
-        by_label[r["claude_suggested_label"]].append(r["sim"])
+        by_label[r["label"]].append(r["sim"])
 
     labels_of_interest = ["hallucinated", "correct", "uncertain"]
     stats_per_label = {lbl: describe(by_label[lbl]) for lbl in labels_of_interest}
@@ -250,22 +263,30 @@ def main() -> int:
     best_t, cm_best = _suggest_threshold(rows_with_sims)
 
     # ── Console + markdown output ──────────────────────────────────
+    is_final = LABEL_COL == "label"
+    intro = (
+        "Analysis uses the human-reviewed `label` column from "
+        "`experiments/results/cascade_labels.csv`. **These are the "
+        "finalized labels** — the numbers here are the ones that go into "
+        "Section 4.9's final writeup and the README."
+        if is_final else
+        "Analysis uses `claude_suggested_label` from "
+        "`experiments/results/cascade_labels_draft.csv`. **These are "
+        "AI-drafted labels, not human-reviewed.** The number that goes "
+        "into Section 4.9's final writeup and the README must come from "
+        "the finalized human-reviewed `cascade_labels.csv`."
+    )
     md_lines = [
         f"# {BANNER}",
         "",
-        "## Preliminary threshold validation (Section 4.9)",
+        f"## Threshold validation (Section 4.9) — "
+        f"{'FINAL' if is_final else 'preliminary'}",
         "",
-        (
-            "Analysis uses `claude_suggested_label` from "
-            "`experiments/results/cascade_labels_draft.csv`. **These are "
-            "AI-drafted labels, not human-reviewed.** The number that "
-            "goes into Section 4.9's final writeup and the README must "
-            "come from the finalized human-reviewed `cascade_labels.csv`."
-        ),
+        intro,
         "",
         "### Per-label sim distribution",
         "",
-        "| AI label | n | mean | median | min | max | stdev |",
+        "| label | n | mean | median | min | max | stdev |",
         "|---|---:|---:|---:|---:|---:|---:|",
     ]
     for lbl in labels_of_interest:
@@ -280,7 +301,7 @@ def main() -> int:
     md_lines.append("")
 
     # Histograms
-    md_lines.append("### sim histograms per AI label\n")
+    md_lines.append("### sim histograms per label\n")
     md_lines.append("```")
     for lbl in labels_of_interest:
         md_lines.append(
@@ -331,12 +352,12 @@ def main() -> int:
     )
     fps = [
         r for r in rows_with_sims
-        if r["sim"] is not None and r["claude_suggested_label"] == "correct"
+        if r["sim"] is not None and r["label"] == "correct"
         and r["sim"] < GROUNDING_THRESHOLD
     ]
     fns = [
         r for r in rows_with_sims
-        if r["sim"] is not None and r["claude_suggested_label"] == "hallucinated"
+        if r["sim"] is not None and r["label"] == "hallucinated"
         and r["sim"] >= GROUNDING_THRESHOLD
     ]
     md_lines.append(f"- FP (AI-labeled 'correct' but sim < threshold): **{len(fps)}**")

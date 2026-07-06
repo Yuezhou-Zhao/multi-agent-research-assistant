@@ -1,50 +1,50 @@
-# FINAL — human-reviewed labels
+# ⚠️  AI-DRAFTED LABELS, PENDING HUMAN REVIEW
 
-## Threshold validation (Section 4.9) — FINAL
+## Threshold validation (Section 4.9) — preliminary
 
-Analysis uses the human-reviewed `label` column from `experiments/results/cascade_labels.csv`. **These are the finalized labels** — the numbers here are the ones that go into Section 4.9's final writeup and the README.
+Analysis uses `claude_suggested_label` from `experiments/results/cascade_labels_draft.csv`. **These are AI-drafted labels, not human-reviewed.** The number that goes into Section 4.9's final writeup and the README must come from the finalized human-reviewed `cascade_labels.csv`.
 
 ### Per-label sim distribution
 
 | label | n | mean | median | min | max | stdev |
 |---|---:|---:|---:|---:|---:|---:|
-| hallucinated | 37 | 0.674 | 0.676 | 0.508 | 0.848 | 0.083 |
-| correct | 13 | 0.779 | 0.782 | 0.650 | 0.889 | 0.079 |
-| uncertain | 8 | 0.733 | 0.742 | 0.592 | 0.862 | 0.089 |
+| hallucinated | 36 | 0.673 | 0.675 | 0.508 | 0.848 | 0.084 |
+| correct | 12 | 0.780 | 0.794 | 0.650 | 0.889 | 0.082 |
+| uncertain | 10 | 0.732 | 0.742 | 0.592 | 0.862 | 0.080 |
 
 ### sim histograms per label
 
 ```
-  hallucinated (n=37):
+  hallucinated (n=36):
     [0.40, 0.50):  0
     [0.50, 0.55): ███ 3
     [0.55, 0.60): █████ 5
-    [0.60, 0.65): ████ 4
-    [0.65, 0.70): ███████████ 11
+    [0.60, 0.65): █████ 5
+    [0.65, 0.70): █████████ 9
     [0.70, 0.75): ███████ 7
     [0.75, 0.80): █████ 5
     [0.80, 0.85): ██ 2
     [0.85, 0.90):  0
     [0.90, 1.00]:  0
-  correct (n=13):
+  correct (n=12):
     [0.40, 0.50):  0
     [0.50, 0.55):  0
     [0.55, 0.60):  0
     [0.60, 0.65):  0
     [0.65, 0.70): ███ 3
     [0.70, 0.75): █ 1
-    [0.75, 0.80): ███ 3
+    [0.75, 0.80): ██ 2
     [0.80, 0.85): ███ 3
     [0.85, 0.90): ███ 3
     [0.90, 1.00]:  0
-  uncertain (n=8):
+  uncertain (n=10):
     [0.40, 0.50):  0
     [0.50, 0.55):  0
     [0.55, 0.60): █ 1
     [0.60, 0.65): █ 1
-    [0.65, 0.70): █ 1
+    [0.65, 0.70): ██ 2
     [0.70, 0.75): ██ 2
-    [0.75, 0.80): █ 1
+    [0.75, 0.80): ██ 2
     [0.80, 0.85): █ 1
     [0.85, 0.90): █ 1
     [0.90, 1.00]:  0
@@ -56,20 +56,20 @@ Positive class = **hallucinated**. Uncertain rows dropped from the confusion mat
 
 | | predicted hallucinated | predicted correct |
 |---|---:|---:|
-| **actual hallucinated** | 36 (TP) | 1 (FN) |
-| **actual correct** | 8 (FP) | 5 (TN) |
+| **actual hallucinated** | 35 (TP) | 1 (FN) |
+| **actual correct** | 7 (FP) | 5 (TN) |
 
-- precision: **0.818**
-- recall: **0.973**
-- F1: **0.889**
+- precision: **0.833**
+- recall: **0.972**
+- F1: **0.897**
 
 ### Suggested threshold (max F1 on hallucinated class, sweep 0.40 → 0.90)
 
-- best threshold: **0.82**  (F1 = 0.889, precision = 0.818, recall = 0.973)
+- best threshold: **0.82**  (F1 = 0.897, precision = 0.833, recall = 0.972)
 
 ### Sentences the current threshold (0.82) mis-classifies
 
-- FP (AI-labeled 'correct' but sim < threshold): **8**
+- FP (AI-labeled 'correct' but sim < threshold): **7**
 - FN (AI-labeled 'hallucinated' but sim ≥ threshold): **1**
 
 Sample FNs (misattributions L2b would let through):

@@ -1,50 +1,50 @@
 {
-  "banner": "FINAL \u2014 human-reviewed labels",
+  "banner": "\u26a0\ufe0f  AI-DRAFTED LABELS, PENDING HUMAN REVIEW",
   "current_threshold": 0.82,
   "current": {
     "threshold": 0.82,
-    "tp": 36,
-    "fp": 8,
+    "tp": 35,
+    "fp": 7,
     "fn": 1,
     "tn": 5,
-    "precision": 0.8181818181818182,
-    "recall": 0.972972972972973,
-    "f1": 0.8888888888888891
+    "precision": 0.8333333333333334,
+    "recall": 0.9722222222222222,
+    "f1": 0.8974358974358975
   },
   "best": {
     "threshold": 0.8200000000000004,
-    "tp": 36,
-    "fp": 8,
+    "tp": 35,
+    "fp": 7,
     "fn": 1,
     "tn": 5,
-    "precision": 0.8181818181818182,
-    "recall": 0.972972972972973,
-    "f1": 0.8888888888888891
+    "precision": 0.8333333333333334,
+    "recall": 0.9722222222222222,
+    "f1": 0.8974358974358975
   },
   "per_label_stats": {
     "hallucinated": {
-      "n": 37,
-      "mean": 0.6740821390538603,
-      "median": 0.6756595969200134,
+      "n": 36,
+      "mean": 0.6734977612892786,
+      "median": 0.6752223968505859,
       "min": 0.5078533887863159,
       "max": 0.8484629392623901,
-      "stdev": 0.08270472348906856
+      "stdev": 0.08390118403944488
     },
     "correct": {
-      "n": 13,
-      "mean": 0.7788016200065613,
-      "median": 0.7819139361381531,
+      "n": 12,
+      "mean": 0.7798300633827845,
+      "median": 0.7943437695503235,
       "min": 0.6503832340240479,
       "max": 0.888611912727356,
-      "stdev": 0.07882155625934915
+      "stdev": 0.08223527899893845
     },
     "uncertain": {
-      "n": 8,
-      "mean": 0.7330331429839134,
+      "n": 10,
+      "mean": 0.7319035947322845,
       "median": 0.7416565120220184,
       "min": 0.5916880369186401,
       "max": 0.8620583415031433,
-      "stdev": 0.08863772809728555
+      "stdev": 0.08034734202664012
     }
   },
   "rows": [
@@ -516,7 +516,7 @@
     {
       "query_idx": 6,
       "sentence_idx": 4,
-      "sentence": "Newer frameworks, like R\u00c2\u00b2AG, aim to mitigate these issues by incorporating nuanced retrieval features to create a more coherent generation process, ultimately bridging gaps between LLMs and the information retrieved [2309.15217v2].",
+      "sentence": "Newer frameworks, like R\u00b2AG, aim to mitigate these issues by incorporating nuanced retrieval features to create a more coherent generation process, ultimately bridging gaps between LLMs and the information retrieved [2309.15217v2].",
       "label": "hallucinated",
       "cited_ids": [
         "2309.15217v2"
@@ -524,7 +524,7 @@
       "resolved_ids": [
         "2309.15217v2"
       ],
-      "sim": 0.6516778469085693
+      "sim": 0.6448686122894287
     },
     {
       "query_idx": 6,
@@ -631,7 +631,7 @@
       "query_idx": 7,
       "sentence_idx": 6,
       "sentence": "Overall, these advancements in reranking contribute to a more robust and accurate retrieval process within RAG systems, ultimately leading to higher quality outputs [2411.16133v2] [2406.16167v1].",
-      "label": "hallucinated",
+      "label": "uncertain",
       "cited_ids": [
         "2411.16133v2",
         "2406.16167v1"
@@ -885,7 +885,7 @@
       "query_idx": 10,
       "sentence_idx": 6,
       "sentence": "Thus, self-consistency can be seen as a critical component in the development of more reliable and robust language modeling techniques [2311.01740v2] [2203.11171v4].",
-      "label": "correct",
+      "label": "uncertain",
       "cited_ids": [
         "2311.01740v2",
         "2203.11171v4"

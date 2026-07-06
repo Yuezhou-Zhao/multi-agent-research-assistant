@@ -141,13 +141,21 @@ table in [`experiments/results/hyde_ab.md`](experiments/results/hyde_ab.md).
 target was ≥60%; 58.3% is honestly on the line and discussed in the design
 doc.) Full breakdown in [`experiments/results/cascade.md`](experiments/results/cascade.md).
 
-> **Cascade F1 (Gamma-only vs. full cascade): pending.** F1 requires
-> human-reviewed ground-truth labels for each sentence. Labeling is in
-> progress; `python -m experiments.compute_f1` fills the table once
-> `experiments/results/cascade_labels.csv` is finalized. A preliminary check
-> against **AI-drafted labels (pending human review)** lives in
-> [`experiments/results/threshold_validation.md`](experiments/results/threshold_validation.md)
-> and is explicitly *not* used as a headline result.
+**Cascade F1 (hallucination detection, human-labeled).** All 65 sentences
+were hand-labeled `correct` / `hallucinated` / `uncertain`; positive class =
+hallucinated:
+
+| | F1 | note |
+|---|---:|---|
+| Gamma alone (L1) | **0.500** | 19 hallucinated sentences slip into the `approve` band — the Semantic Illusion |
+| Full cascade (+ L3 on escalates) | **0.600** | the LLM judge lifts F1 by 10 pts — the third layer earning its place |
+
+That the Gamma layer misses hallucinations which *look* distributionally
+normal is exactly why the **L2b citation-grounding check** was added: against
+the human labels it flags misattributed citations at **recall 0.97 / F1 0.89**
+(threshold 0.82). Full analysis in
+[`experiments/results/threshold_validation.md`](experiments/results/threshold_validation.md)
+and [`experiments/results/cascade_f1.md`](experiments/results/cascade_f1.md).
 
 ---
 

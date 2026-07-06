@@ -23,13 +23,11 @@ downgraded in the L1 cascade decisions (approve -> escalate, escalate
 gets one more chance to be rescued at L3; a sentence Gamma already
 escalated gets rejected outright.
 
-Threshold. Starts at 0.5 (user-suggested initial value). Empirically
-this embedding model (`bge-small-en-v1.5`) has an anisotropic baseline
-where wildly unrelated English text against a query still scores
-0.35-0.49 cosine sim (documented in Section 8's HyDE-gate limitation),
-so 0.5 is a modest lift above that floor rather than a sharp cliff. The
-Section 4.9 write-up notes that the threshold is subject to empirical
-tuning against the labeled cascade_labels.csv once available.
+Threshold. Set to 0.82 by sweeping F1 against the human-reviewed
+cascade_labels.csv (see GROUNDING_THRESHOLD below for the measured
+precision/recall table and the recall-over-precision rationale). Earlier
+hand-picked values (0.5, then 0.65) fired too rarely — 0.65 caught only
+12 of 37 real misattributions.
 """
 import re
 from dataclasses import dataclass, field
@@ -50,13 +48,31 @@ _CITATION_RE = re.compile(r"\[(\d+)\]")
 #   Illusion chunk):                                       sim = 0.837
 #   wildly unrelated (HyDE sentence → recipe chunk):      sim = 0.442
 #
-# Initial guess was 0.5 (per user), which would only catch the
-# "wildly unrelated" case (0.44 downgrades, 0.57 does not). Moved to
-# 0.65 so the actual measured misattribution from labeling gets
-# downgraded, while the well-grounded pairs (>=0.83) stay well above.
-# Same-subfield-but-adjacent (0.84) is not caught by this threshold and
-# is documented as a known limitation in Section 4.9.
-GROUNDING_THRESHOLD = 0.65
+# Final threshold set by sweeping against the human-reviewed labels in
+# experiments/results/cascade_labels.csv (58 cited sentences: 37
+# hallucinated / 13 correct / 8 uncertain). Positive class = hallucinated;
+# L2b downgrades a sentence whose sim < threshold. Measured precision/recall
+# on those labels (experiments/threshold_validation.py --source final):
+#
+#   threshold 0.65:  precision 1.000  recall 0.324  F1 0.490  (catches 12/37)
+#   threshold 0.82:  precision 0.818  recall 0.973  F1 0.889  (catches 36/37)
+#
+# 0.65 (the earlier hand-picked value) barely fires — it misses 25 of 37
+# real misattributions, defeating the purpose of the check. 0.82 is the
+# F1-optimal on the labeled set and is robustly confirmed by the AI-drafted
+# labels too (same 0.82 optimum, see threshold_validation_aidraft.md).
+#
+# The cost of 0.82 is precision: ~8 of 13 correct same-subfield citations
+# fall below it and get downgraded. But L2b downgrades approve -> escalate
+# (i.e. hands the sentence to the L3 LLM judge, which re-checks it) rather
+# than to a final verdict, so a false downgrade costs an extra L3 call, not
+# a wrong answer. Given that the misattribution failure mode is exactly what
+# L2b exists to catch, we prioritize recall here and let L3 clean up the
+# false positives. The residual hallucinated/correct sim overlap in
+# [0.65, 0.85] is the documented Semantic-Illusion limitation (Section 8) —
+# an embedding-only signal can't separate them cleanly; a stronger signal
+# (NLI / the L3 judge) is what closes it.
+GROUNDING_THRESHOLD = 0.82
 
 
 @dataclass

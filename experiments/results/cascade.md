@@ -12,4 +12,4 @@ Total sentences scored: **60**
 
 **LLM Critic invocation rate (escalate band):** 41.7%
 
-**Final F1 vs Gamma-only F1:** _pending human labels — see `experiments/results/cascade_labels.csv`. Run `python -m experiments.compute_f1` after labeling to fill in._
+**Final F1 vs Gamma-only F1:** Gamma-only **0.500**, full cascade **0.600** (positive class = hallucinated, human-labeled n=56; see `cascade_f1.md`). The L3 judge on the escalate band lifts F1 by 10 points over Gamma alone.
