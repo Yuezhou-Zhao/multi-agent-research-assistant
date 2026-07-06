@@ -30,8 +30,18 @@ def qwen_client() -> AsyncOpenAI:
     return _qwen_client
 
 
+# qwen3.5-397b-a17b is a reasoning model: left in thinking mode it spends
+# the whole token budget on an internal trace and returns content=None with
+# finish_reason=length (observed on web_only/ambiguous generation prompts).
+# Neither query generation nor routing classification needs chain-of-thought,
+# so we disable it. This vLLM deployment honors chat_template_kwargs but NOT
+# the /no_think soft-switch, so we pass it via extra_body.
+_NO_THINK = {"chat_template_kwargs": {"enable_thinking": False}}
+
+
 async def qwen_chat(prompt: str, *, temperature: float, max_tokens: int = 2048) -> str:
-    """One qwen chat completion with retry/backoff. Returns raw text."""
+    """One qwen chat completion (thinking disabled) with retry/backoff.
+    Returns raw text."""
     client = qwen_client()
 
     async def _call() -> str:
@@ -40,6 +50,7 @@ async def qwen_chat(prompt: str, *, temperature: float, max_tokens: int = 2048) 
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             max_tokens=max_tokens,
+            extra_body=_NO_THINK,
         )
         return resp.choices[0].message.content or ""
 

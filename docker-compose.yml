@@ -1,5 +1,10 @@
 services:
   research-agent:
+    # No platform pin: build and run natively for the host arch. On Apple
+    # Silicon this is linux/arm64 — pinning linux/amd64 forced an emulated
+    # rebuild that re-downloaded every wheel. All deps (torch CPU, faiss,
+    # FlagEmbedding) publish arm64 wheels, so native is both faster and
+    # avoids the redundant build.
     build: .
     image: academic-research-agent:latest
     container_name: research-agent

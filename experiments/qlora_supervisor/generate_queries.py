@@ -81,29 +81,54 @@ Requirements:
 Respond with ONLY a JSON array of {n} strings."""
 
 
+async def _one_batch(category: str, want: int, sem: asyncio.Semaphore) -> list[str]:
+    """One generation call → list of query strings (may be empty on a
+    parse miss; the caller fires extra batches to absorb that)."""
+    async with sem:
+        reply = await qwen_chat(_gen_prompt(category, want), temperature=1.0)
+    try:
+        arr = extract_json(reply)
+    except ValueError:
+        return []
+    if isinstance(arr, dict):  # some models wrap in {"queries": [...]}
+        arr = next((v for v in arr.values() if isinstance(v, list)), [])
+    return [q.strip() for q in arr if isinstance(q, str) and q.strip()]
+
+
+async def _generate_category(
+    category: str, per_category: int, batch_size: int, sem: asyncio.Semaphore
+) -> list[str]:
+    """Fire waves of concurrent batches until per_category collected (after
+    within-category exact dedup), capped so a persistently-short category
+    can't loop forever."""
+    from .common import normalize_query
+
+    collected: list[str] = []
+    seen: set[str] = set()
+    # batches per wave: enough to cover the target with ~1.5x margin.
+    per_wave = max(2, (per_category // batch_size) + 2)
+    for _wave in range(4):  # ≤4 waves — generous headroom for dedup shrink
+        if len(collected) >= per_category:
+            break
+        results = await asyncio.gather(
+            *(_one_batch(category, batch_size, sem) for _ in range(per_wave))
+        )
+        for batch in results:
+            for q in batch:
+                norm = normalize_query(q)
+                if norm not in seen:
+                    seen.add(norm)
+                    collected.append(q)
+    return collected[:per_category]
+
+
 async def _generate_pool(pool_name: str, per_category: int, batch_size: int) -> list[dict]:
     prefix = pool_name  # "train" or "eval"
+    sem = asyncio.Semaphore(config.MAX_CONCURRENCY)
     rows: list[dict] = []
     counter = 0
     for category in config.CATEGORIES:
-        collected: list[str] = []
-        # Over-generate to absorb dedup shrinkage; cap batches for safety.
-        max_batches = max(3, (per_category // batch_size + 1) * 3)
-        for _ in range(max_batches):
-            if len(collected) >= per_category:
-                break
-            want = min(batch_size, per_category - len(collected) + batch_size // 2)
-            reply = await qwen_chat(_gen_prompt(category, want), temperature=1.0)
-            try:
-                arr = extract_json(reply)
-            except ValueError:
-                continue
-            if isinstance(arr, dict):  # some models wrap in {"queries": [...]}
-                arr = next((v for v in arr.values() if isinstance(v, list)), [])
-            for q in arr:
-                if isinstance(q, str) and q.strip():
-                    collected.append(q.strip())
-        collected = collected[:per_category]
+        collected = await _generate_category(category, per_category, batch_size, sem)
         for q in collected:
             counter += 1
             rows.append(
@@ -143,7 +168,11 @@ async def main() -> int:
         from .common import write_jsonl
 
         write_jsonl(config.TRAIN_QUERIES_PATH, train_rows)
-        print(f"  wrote {config.TRAIN_QUERIES_PATH}")
+        # Regenerating queries reuses ids (train-000001…) with NEW text, so any
+        # existing labels are now stale — remove them so ROLE 2 relabels from
+        # scratch rather than resuming against mismatched ids.
+        config.TRAIN_SET_PATH.unlink(missing_ok=True)
+        print(f"  wrote {config.TRAIN_QUERIES_PATH} (cleared stale train_set.jsonl)")
 
     if args.pool in ("eval", "both"):
         print("ROLE 1 — generating EVAL pool (qwen, held-out)")
@@ -164,7 +193,11 @@ async def main() -> int:
         else:
             print("  WARNING: no train pool found — cannot verify disjointness")
         write_jsonl(config.EVAL_QUERIES_PATH, eval_rows)
-        print(f"  wrote {config.EVAL_QUERIES_PATH}")
+        # Same staleness guard for the eval labels + spot-check sheet.
+        config.EVAL_SET_PATH.unlink(missing_ok=True)
+        config.SPOTCHECK_PATH.unlink(missing_ok=True)
+        print(f"  wrote {config.EVAL_QUERIES_PATH} "
+              f"(cleared stale eval_set.jsonl + spotcheck)")
 
     print("done.")
     return 0
