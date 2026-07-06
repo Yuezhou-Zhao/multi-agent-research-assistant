@@ -18,10 +18,10 @@ experiments/results/cascade_labels_draft.csv
 # Docker build transcript (tee output, regenerable)
 build.log
 
-# QLoRA data-prep generated artifacts (regenerable; the human-reviewed
+# LoRA data-prep generated artifacts (regenerable; the human-reviewed
 # eval_spotcheck.csv is the exception — force-add it when filled in)
-experiments/qlora_supervisor/data/
+experiments/lora_supervisor/data/
 
-# QLoRA training artifacts: LoRA adapter + checkpoints (~86MB, regenerable
+# LoRA training artifacts: adapter + checkpoints (~86MB, regenerable
 # from committed train_set.jsonl via train_lora.py). Keep the repo lean.
-experiments/qlora_supervisor/train/
+experiments/lora_supervisor/train/

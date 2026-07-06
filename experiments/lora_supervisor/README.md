@@ -1,12 +1,17 @@
-# Supervisor QLoRA Distillation — Data Preparation
+# Supervisor LoRA Distillation
 
-Prepares the training + eval data to fine-tune a **small local model** (e.g.
-Qwen2.5-1.5B via QLoRA) that replaces the Supervisor's single `gpt-4o-mini`
-routing call (`backend/nodes/supervisor.py`) with local inference — then lets
-us report accuracy vs. the API version plus the cost/latency delta.
+Distills the Supervisor's single `gpt-4o-mini` routing call
+(`backend/nodes/supervisor.py`) into a **small local model** (Qwen2.5-1.5B +
+LoRA) so routing runs on-device, and reports accuracy vs. the API baseline
+plus the cost/latency delta.
 
-**This directory only prepares the data.** The QLoRA fine-tune itself is run
-separately, later.
+Fine-tuning here is **LoRA** (adapters on the fp16 base), not 4-bit QLoRA —
+see `train_lora.py` / `RESULTS.md` for why (bitsandbytes 4-bit is CUDA-only,
+and unnecessary for a 1.5B model on 48 GB unified memory).
+
+**Measured results: [`RESULTS.md`](RESULTS.md).** Labeling methodology + the
+routing decision rule: [`METHODOLOGY.md`](METHODOLOGY.md). The rest of this
+file covers the data-prep pipeline.
 
 ## Three independent data roles (no model grades its own homework)
 
@@ -62,16 +67,16 @@ main project) drives ROLE 2.
 
 ```bash
 # 0. Validate endpoint + full pipeline on tiny counts first (3/category, 1 batch)
-python -m experiments.qlora_supervisor.generate_queries --pool both --smoke
+python -m experiments.lora_supervisor.generate_queries --pool both --smoke
 
 # 1. ROLE 1 — generate the real pools (~800 train / ~120 eval, disjoint)
-python -m experiments.qlora_supervisor.generate_queries --pool both
+python -m experiments.lora_supervisor.generate_queries --pool both
 
 # 2. ROLE 2 — label the training pool with gpt-4o-mini (production Supervisor)
-python -m experiments.qlora_supervisor.label_training
+python -m experiments.lora_supervisor.label_training
 
 # 3. ROLE 3 — label the held-out eval pool with qwen + emit the spot-check sheet
-python -m experiments.qlora_supervisor.label_eval
+python -m experiments.lora_supervisor.label_eval
 
 # 4. Hand-verify data/eval_spotcheck.csv (fill the human_* columns), then the
 #    eval set is trusted and ready to score a fine-tuned student against.

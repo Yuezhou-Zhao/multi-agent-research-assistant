@@ -1,8 +1,8 @@
-"""Config for the Supervisor QLoRA distillation data-prep pipeline.
+"""Config for the Supervisor LoRA distillation data-prep pipeline.
 
 The whole point of this experiment is to replace the Supervisor's single
 gpt-4o-mini routing call (backend/nodes/supervisor.py) with a small local
-model fine-tuned via QLoRA — then report accuracy vs. the API version plus
+model fine-tuned via LoRA — then report accuracy vs. the API version plus
 the cost/latency delta. This module only prepares the *data*; the fine-tune
 itself is run separately.
 

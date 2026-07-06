@@ -16,7 +16,7 @@ Idempotent: re-running re-derives corrections from the CSV; already-applied
 rows just get re-confirmed.
 
 Run:
-  python -m experiments.qlora_supervisor.apply_spotcheck
+  python -m experiments.lora_supervisor.apply_spotcheck
 """
 import csv
 import sys

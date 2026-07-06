@@ -77,9 +77,9 @@ was scored on. Numbers are measured, not tuned toward a target.
 
 ```bash
 # data already prepared (train_set.jsonl / eval_set.jsonl committed)
-python -m experiments.qlora_supervisor.format_dataset          # → train_chat.jsonl (1308)
-HF_HUB_OFFLINE=1 python -m experiments.qlora_supervisor.train_lora   # → train/adapter (~18 min, MPS)
-python -m experiments.qlora_supervisor.eval_routing --backend openai --out data/baseline_gpt4omini.json
-HF_HUB_OFFLINE=1 python -m experiments.qlora_supervisor.eval_routing \
+python -m experiments.lora_supervisor.format_dataset          # → train_chat.jsonl (1308)
+HF_HUB_OFFLINE=1 python -m experiments.lora_supervisor.train_lora   # → train/adapter (~18 min, MPS)
+python -m experiments.lora_supervisor.eval_routing --backend openai --out data/baseline_gpt4omini.json
+HF_HUB_OFFLINE=1 python -m experiments.lora_supervisor.eval_routing \
     --backend local --adapter train/adapter --out data/student_qwen1.5b_lora.json
 ```

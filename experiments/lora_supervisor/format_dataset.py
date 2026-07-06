@@ -20,8 +20,8 @@ capped (`--balance-ratio`, default 1.0 = match the majority) so the tradeoff
 against overfitting the few real `both` examples is explicit and tunable.
 
 Run:
-  python -m experiments.qlora_supervisor.format_dataset            # ratio 1.0
-  python -m experiments.qlora_supervisor.format_dataset --balance-ratio 0.5
+  python -m experiments.lora_supervisor.format_dataset            # ratio 1.0
+  python -m experiments.lora_supervisor.format_dataset --balance-ratio 0.5
 """
 import argparse
 import collections

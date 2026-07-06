@@ -17,9 +17,9 @@ Reports (identical metric set for both, so they're directly comparable):
 Measured, not tuned — same discipline as every other result in the repo.
 
 Run:
-  python -m experiments.qlora_supervisor.eval_routing --backend openai
-  python -m experiments.qlora_supervisor.eval_routing --backend local \
-      --adapter experiments/qlora_supervisor/train/adapter
+  python -m experiments.lora_supervisor.eval_routing --backend openai
+  python -m experiments.lora_supervisor.eval_routing --backend local \
+      --adapter experiments/lora_supervisor/train/adapter
 """
 import argparse
 import asyncio

@@ -14,7 +14,7 @@ Resumable: re-running skips ids already in the output file, so an
 interrupted run (network blip) continues instead of re-billing finished rows.
 
 Run:
-  python -m experiments.qlora_supervisor.label_training
+  python -m experiments.lora_supervisor.label_training
 """
 import asyncio
 import sys

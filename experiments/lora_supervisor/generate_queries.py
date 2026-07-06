@@ -13,8 +13,8 @@ The intended category is metadata only — the real training/eval LABEL comes
 from ROLE 2 / ROLE 3. Here we just want a varied, realistic query pool.
 
 Run:
-  python -m experiments.qlora_supervisor.generate_queries --pool both
-  python -m experiments.qlora_supervisor.generate_queries --pool both --smoke
+  python -m experiments.lora_supervisor.generate_queries --pool both
+  python -m experiments.lora_supervisor.generate_queries --pool both --smoke
 """
 import argparse
 import asyncio

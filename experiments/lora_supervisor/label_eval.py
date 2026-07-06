@@ -17,7 +17,7 @@ Outputs:
   eval_spotcheck.csv    SPOTCHECK_N rows with blank human-review columns
 
 Run:
-  python -m experiments.qlora_supervisor.label_eval
+  python -m experiments.lora_supervisor.label_eval
 """
 import asyncio
 import csv

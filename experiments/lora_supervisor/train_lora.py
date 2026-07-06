@@ -14,7 +14,7 @@ loss on the assistant completion only (prompt tokens masked). Saves the LoRA
 adapter to train/adapter for eval_routing.py --backend local.
 
 Run (after format_dataset.py):
-  python -m experiments.qlora_supervisor.train_lora
+  python -m experiments.lora_supervisor.train_lora
 """
 import json
 import sys
@@ -138,7 +138,7 @@ def main() -> int:
     model.save_pretrained(str(ADAPTER_DIR))
     tok.save_pretrained(str(ADAPTER_DIR))
     print(f"saved adapter → {ADAPTER_DIR}")
-    print("next: python -m experiments.qlora_supervisor.eval_routing "
+    print("next: python -m experiments.lora_supervisor.eval_routing "
           f"--backend local --adapter {ADAPTER_DIR}")
     return 0
 
