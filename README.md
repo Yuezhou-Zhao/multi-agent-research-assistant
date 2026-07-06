@@ -152,10 +152,20 @@ hallucinated:
 
 That the Gamma layer misses hallucinations which *look* distributionally
 normal is exactly why the **L2b citation-grounding check** was added: against
-the human labels it flags misattributed citations at **recall 0.97 / F1 0.89**
-(threshold 0.82). Full analysis in
+the human labels it flags misattributed citations at **precision 0.89 / recall
+0.62 / F1 0.73** (threshold 0.70 — see note below on why not the F1-optimal
+0.82). Full analysis in
 [`experiments/results/threshold_validation.md`](experiments/results/threshold_validation.md)
 and [`experiments/results/cascade_f1.md`](experiments/results/cascade_f1.md).
+
+> **Why 0.70, not the F1-optimal 0.82.** F1 keeps rising to 0.82, but that
+> threshold sits *above* the correct-citation sim mean (0.779), so it
+> downgrades ~88% of all sentences — the Critic then never converges and
+> force-finalizes almost every query (caught by `scripts/demo_dryrun.py`: the
+> same query approved or force-finalized at random between runs). 0.70 sits
+> between the class means, flags ~50%, and keeps the self-correction loop
+> convergent — a case where the F1-optimal on a static label set is
+> operationally wrong on the live system.
 
 > **Why the sentence counts differ across this section.** **65** = the
 > human-labeled batch (all correctness metrics use it). **58** = the 65 that

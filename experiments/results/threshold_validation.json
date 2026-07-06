@@ -1,15 +1,15 @@
 {
   "banner": "FINAL \u2014 human-reviewed labels",
-  "current_threshold": 0.82,
+  "current_threshold": 0.7,
   "current": {
-    "threshold": 0.82,
-    "tp": 36,
-    "fp": 8,
-    "fn": 1,
-    "tn": 5,
-    "precision": 0.8181818181818182,
-    "recall": 0.972972972972973,
-    "f1": 0.8888888888888891
+    "threshold": 0.7,
+    "tp": 23,
+    "fp": 3,
+    "fn": 14,
+    "tn": 10,
+    "precision": 0.8846153846153846,
+    "recall": 0.6216216216216216,
+    "f1": 0.7301587301587302
   },
   "best": {
     "threshold": 0.8200000000000004,

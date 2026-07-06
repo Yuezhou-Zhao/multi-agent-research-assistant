@@ -23,11 +23,12 @@ downgraded in the L1 cascade decisions (approve -> escalate, escalate
 gets one more chance to be rescued at L3; a sentence Gamma already
 escalated gets rejected outright.
 
-Threshold. Set to 0.82 by sweeping F1 against the human-reviewed
-cascade_labels.csv (see GROUNDING_THRESHOLD below for the measured
-precision/recall table and the recall-over-precision rationale). Earlier
-hand-picked values (0.5, then 0.65) fired too rarely — 0.65 caught only
-12 of 37 real misattributions.
+Threshold. Set to 0.70 by sweeping against the human-reviewed
+cascade_labels.csv, balancing detection against *operability* — the
+F1-optimal 0.82 flagged ~88% of sentences and made the Critic
+force-finalize almost every query, so we chose the best detection inside
+the band where the self-correction loop still converges. See
+GROUNDING_THRESHOLD below for the full sweep table and rationale.
 """
 import re
 from dataclasses import dataclass, field
@@ -48,31 +49,34 @@ _CITATION_RE = re.compile(r"\[(\d+)\]")
 #   Illusion chunk):                                       sim = 0.837
 #   wildly unrelated (HyDE sentence → recipe chunk):      sim = 0.442
 #
-# Final threshold set by sweeping against the human-reviewed labels in
-# experiments/results/cascade_labels.csv (58 cited sentences: 37
-# hallucinated / 13 correct / 8 uncertain). Positive class = hallucinated;
-# L2b downgrades a sentence whose sim < threshold. Measured precision/recall
-# on those labels (experiments/threshold_validation.py --source final):
+# Threshold chosen by sweeping against the human-reviewed labels in
+# experiments/results/cascade_labels.csv (58 cited sentences: 37 hallucinated
+# / 13 correct / 8 uncertain). Positive class = hallucinated; L2b downgrades a
+# sentence whose sim < threshold. Two competing signals across the sweep
+# (experiments/threshold_validation.py --source final; %flag = fraction of all
+# 58 sentences downgraded, the operability proxy):
 #
-#   threshold 0.65:  precision 1.000  recall 0.324  F1 0.490  (catches 12/37)
-#   threshold 0.82:  precision 0.818  recall 0.973  F1 0.889  (catches 36/37)
+#   thresh | %flag |  TP FN FP | prec  rec   F1
+#   0.68   |  41%  |  20 17  2 | 0.91 0.54 0.68   loop converges
+#   0.70   |  50%  |  23 14  3 | 0.88 0.62 0.73   <-- chosen
+#   0.82   |  88%  |  36  1  8 | 0.82 0.97 0.89   F1-optimal but pathological
 #
-# 0.65 (the earlier hand-picked value) barely fires — it misses 25 of 37
-# real misattributions, defeating the purpose of the check. 0.82 is the
-# F1-optimal on the labeled set and is robustly confirmed by the AI-drafted
-# labels too (same 0.82 optimum, see threshold_validation_aidraft.md).
+# F1 keeps rising to 0.82, BUT that is a trap: 0.82 sits ABOVE the correct-
+# citation sim mean (0.779), so it downgrades ~88% of all sentences — the
+# Critic then sees near-universal reject/escalate, never converges, and
+# force-finalizes almost every query (confirmed by scripts/demo_dryrun.py:
+# the same query non-deterministically approved or force-finalized run to
+# run). Optimizing F1 on a static label set ignored this operability cost.
 #
-# The cost of 0.82 is precision: ~8 of 13 correct same-subfield citations
-# fall below it and get downgraded. But L2b downgrades approve -> escalate
-# (i.e. hands the sentence to the L3 LLM judge, which re-checks it) rather
-# than to a final verdict, so a false downgrade costs an extra L3 call, not
-# a wrong answer. Given that the misattribution failure mode is exactly what
-# L2b exists to catch, we prioritize recall here and let L3 clean up the
-# false positives. The residual hallucinated/correct sim overlap in
-# [0.65, 0.85] is the documented Semantic-Illusion limitation (Section 8) —
-# an embedding-only signal can't separate them cleanly; a stronger signal
-# (NLI / the L3 judge) is what closes it.
-GROUNDING_THRESHOLD = 0.82
+# 0.70 sits between the hallucinated (0.674) and correct (0.779) means: it
+# flags ~50% of sentences (the self-correction loop still converges), catches
+# 62% of misattributions at precision 0.88, and only wrongly flags 3/13
+# correct citations. L2b downgrades approve -> escalate (the L3 judge
+# re-checks), so its false positives cost an extra L3 call, not a wrong
+# answer. The residual hallucinated/correct sim overlap is the documented
+# Semantic-Illusion limitation (Section 8) — an embedding-only signal can't
+# separate them cleanly; the L3 judge is what closes the gap.
+GROUNDING_THRESHOLD = 0.70
 
 
 @dataclass

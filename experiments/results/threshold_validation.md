@@ -50,27 +50,34 @@ Analysis uses the human-reviewed `label` column from `experiments/results/cascad
     [0.90, 1.00]:  0
 ```
 
-### Confusion at current threshold (GROUNDING_THRESHOLD = 0.82)
+### Confusion at current threshold (GROUNDING_THRESHOLD = 0.7)
 
 Positive class = **hallucinated**. Uncertain rows dropped from the confusion matrix (they can't be graded either way).
 
 | | predicted hallucinated | predicted correct |
 |---|---:|---:|
-| **actual hallucinated** | 36 (TP) | 1 (FN) |
-| **actual correct** | 8 (FP) | 5 (TN) |
+| **actual hallucinated** | 23 (TP) | 14 (FN) |
+| **actual correct** | 3 (FP) | 10 (TN) |
 
-- precision: **0.818**
-- recall: **0.973**
-- F1: **0.889**
+- precision: **0.885**
+- recall: **0.622**
+- F1: **0.730**
 
 ### Suggested threshold (max F1 on hallucinated class, sweep 0.40 → 0.90)
 
 - best threshold: **0.82**  (F1 = 0.889, precision = 0.818, recall = 0.973)
 
-### Sentences the current threshold (0.82) mis-classifies
+### Sentences the current threshold (0.7) mis-classifies
 
-- FP (AI-labeled 'correct' but sim < threshold): **8**
-- FN (AI-labeled 'hallucinated' but sim ≥ threshold): **1**
+- FP (AI-labeled 'correct' but sim < threshold): **3**
+- FN (AI-labeled 'hallucinated' but sim ≥ threshold): **14**
 
 Sample FNs (misattributions L2b would let through):
+  - q1s2  sim=0.762  cited=['2403.15450v1', '2602.07739v2']
+  - q1s4  sim=0.723  cited=['2207.03030v1', '2606.28358v1']
+  - q2s3  sim=0.725  cited=['2604.10697v1', '2311.04589v3']
+  - q2s5  sim=0.736  cited=['2312.12141v4']
+  - q3s3  sim=0.736  cited=['2406.09136v2']
+  - q3s6  sim=0.709  cited=['2506.03673v1']
   - q4s3  sim=0.848  cited=['2508.01862v1']
+  - q5s6  sim=0.788  cited=['2108.06279v2', '2601.06196v3']
