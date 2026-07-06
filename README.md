@@ -157,6 +157,17 @@ the human labels it flags misattributed citations at **recall 0.97 / F1 0.89**
 [`experiments/results/threshold_validation.md`](experiments/results/threshold_validation.md)
 and [`experiments/results/cascade_f1.md`](experiments/results/cascade_f1.md).
 
+> **Why the sentence counts differ across this section.** **65** = the
+> human-labeled batch (all correctness metrics use it). **58** = the 65 that
+> carry a citation — the grounding check needs a cited chunk to score against.
+> **56** = the 65 minus the 9 `uncertain` labels — binary F1 needs a decisive
+> `correct`/`hallucinated`. The **60** in the band table above is a *separate,
+> unlabeled* self-consistency re-run taken **after** the Section 4.9
+> writer-prompt hardening; that change made the Writer more cautious (more
+> `escalate`), which is why its resolve rate (58.3%) sits below the labeled
+> batch's (75.4%). Band distribution = the shipped post-fix system;
+> correctness metrics = the labeled pre-fix batch.
+
 ---
 
 ## Local-inference extension — distilling the router with LoRA
@@ -262,12 +273,12 @@ docker compose run --rm --entrypoint python research-agent -m scripts.smoke_test
 
 The Dockerfile is configured for slow/throttled networks (CPU-only torch
 index, BuildKit pip cache mount, PyPI mirror override via
-`--build-arg PIP_INDEX_URL=...`). **Status:** the image build depends on
-fetching ~450 MB of Linux wheels; on a heavily throttled connection the build
-can stall on the download step. Container end-to-end verification is
-**pending a clean-network build** — application correctness itself is already
-verified via the local `smoke_test` (passes end-to-end) and the full test
-suite below.
+`--build-arg PIP_INDEX_URL=...` — the image pulls ~450 MB of Linux wheels).
+**Status: verified end-to-end.** The image builds `linux/arm64` and the
+container ran a full query through the graph via the smoke test above
+(`status=approved`, 5/15 LLM calls, real citations, exit 0). The build is
+network-heavy, so on a heavily throttled connection it can stall on the
+download step — the mirror override exists for exactly that case.
 
 ---
 
