@@ -24,6 +24,7 @@ a cheap-first hallucination cascade, and a hard global budget cap.
 | Hallucination detection without a slow LLM judge | **Three-layer cascade**: calibrated embedding guardrail (0 LLM, <2 ms) → citation grounding (0 LLM) → LLM judge only on the uncertain middle band |
 | "Multi-agent" that's really sequential nodes | **True parallel** arXiv + web sub-agents via LangGraph `Send`, independent tool sets, no shared intermediate state |
 | Cost spiral in nested correction loops | **Global LLM budget cap (max 15 calls/query)** with documented worst-case math — ~$0.016/query ceiling |
+| Paying an API for a routing gate on every query | **Distilled the router into a local Qwen2.5-1.5B + LoRA** — within 1.6 pts of gpt-4o-mini accuracy at ~3–5× lower latency, on-device ([details](#local-inference-extension--distilling-the-router-with-lora)) |
 
 ---
 
@@ -150,6 +151,46 @@ doc.) Full breakdown in [`experiments/results/cascade.md`](experiments/results/c
 
 ---
 
+## Local-inference extension — distilling the router with LoRA
+
+The same cost-engineering thread that motivates the budget cap, HyDE caching,
+and the zero-LLM cascade extends to the Supervisor's per-query routing call.
+That call (`gpt-4o-mini`, decides arXiv / web / both) runs before every
+retrieval. I distilled it into a **local Qwen2.5-1.5B + LoRA** and measured
+the student against the same 130-row, human-corrected held-out eval set the
+API model was scored on (labels judged by an independent model, then
+human-corrected on the hard cases — see
+[`experiments/lora_supervisor/`](experiments/lora_supervisor/)).
+
+| Metric | gpt-4o-mini (API) | Qwen2.5-1.5B + LoRA (local) |
+|---|---:|---:|
+| **route accuracy** | 0.854 | **0.838** (−1.6 pt) |
+| macro F1 | 0.782 | 0.752 |
+| `both`-class F1 | 0.486 | 0.424 |
+| **latency mean** | 2.95 s | **0.97 s** (~3×) |
+| **latency p95** | 5.90 s | **1.15 s** (~5×) |
+| marginal cost / call | ~$0.000034 | ~$0 (local) |
+
+**Read the whole row, not just the flattering half.** The student lands within
+**1.6 points** of gpt-4o-mini on routing while cutting mean latency ~3× and the
+p95 tail ~5× (≈6 s → ≈1 s), running fully on-device — no network round trip, no
+external dependency, no query text leaving the machine. But two honest caveats
+travel with that: (1) the student **inherits the teacher's blind spot on the
+`both` class** (F1 0.42 vs the teacher's own weak 0.49) — a distilled model
+can't exceed its teacher's signal on the hardest class, and oversampling lifted
+`both` precision but not recall; and (2) the **dollar saving is negligible at
+this call volume** (~$0.03 / 1,000 calls), so the real wins are latency and
+independence, *not* cost. The latency figures also compare an API call
+(includes network) against local MPS inference — which is exactly the
+deployment question ("keep the API call or run it locally?"), but worth stating.
+
+It's **LoRA** (adapters on an fp16 base), not 4-bit QLoRA: bitsandbytes 4-bit is
+CUDA-only, and unnecessary here since a 1.5B model in fp16 (~3 GB) fits easily
+in the M5 Pro's 48 GB unified memory. Full write-up, method, and class-imbalance
+handling: [`experiments/lora_supervisor/RESULTS.md`](experiments/lora_supervisor/RESULTS.md).
+
+---
+
 ## Citation misattribution — a real bug found during evaluation
 
 A labeling exercise surfaced a failure mode the index-based citation system
@@ -256,6 +297,8 @@ evaluation/
   citation_grounding.py embedding grounding check (L2b)
 frontend/app.py     Chainlit UI
 experiments/        HyDE A/B, cascade effectiveness, threshold validation
+  lora_supervisor/  distill the router into a local Qwen2.5-1.5B + LoRA
+                    (3-role data prep, train, eval vs gpt-4o-mini)
 scripts/smoke_test.py   one-query end-to-end verifier
 tests/              104 unit + integration tests
 agent_system_design_v2.md   locked design doc (the full rationale)
