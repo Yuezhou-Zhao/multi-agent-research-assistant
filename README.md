@@ -28,6 +28,32 @@ a cheap-first hallucination cascade, and a hard global budget cap.
 
 ---
 
+## Engineering-judgment highlight — when the metric-optimal number broke the live system
+
+The single decision I'd most want to walk through:
+
+The citation-grounding check (L2b) has a similarity threshold. Swept against
+my human-labeled set, **0.82 was F1-optimal** (recall 0.97, F1 0.89) — the
+number the metric told me to ship. It was **operationally unviable**: 0.82
+sits *above* the correct-citation similarity mean (0.779), so it flagged
+~88% of all sentences, the self-correcting loop never converged, and nearly
+every query **force-finalized — non-deterministically** (same query approved
+on one run, force-finalized the next).
+
+**My own dry-run harness caught it, not the labeled metric.** I then swept the
+detection-vs-operability tradeoff explicitly (added a `%flag` column for "how
+much of a real draft gets downgraded") and deliberately shipped **0.70** —
+fewer misattributions caught (62% vs 97%), but a loop that actually converges.
+
+Found the metric-optimal number → discovered it doesn't survive contact with
+the live system → measured the real tradeoff → chose deliberately for
+operational stability, not pure F1. Full arc in
+[Section 4.9 of the design doc](agent_system_design_v2.md) and the sweep in
+[`experiments/results/threshold_validation.md`](experiments/results/threshold_validation.md);
+the harness that caught it is [`scripts/demo_dryrun.py`](scripts/demo_dryrun.py).
+
+---
+
 ## Architecture
 
 ```mermaid
