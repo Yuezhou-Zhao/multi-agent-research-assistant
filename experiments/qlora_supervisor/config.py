@@ -57,8 +57,12 @@ TRAIN_LABEL_MODEL = "gpt-4o-mini"  # must match SupervisorAgent.LLM_MODEL
 CATEGORIES = ("arxiv_only", "web_only", "both", "ambiguous")
 
 # Targets (within the user's requested ranges: ~600-1,100 train / 100-150 eval)
-TRAIN_PER_CATEGORY = 200          # → 800 training queries
-EVAL_PER_CATEGORY = 30            # → 120 held-out eval queries
+TRAIN_PER_CATEGORY = 200          # → 800 gen → ~640 after near-dup dedup
+# Over-generate eval: ~46% of a naively-sized eval pool gets removed for
+# colliding with the (much larger) training pool, since both are drawn from
+# the same generator. 55/category → ~220 gen → ~110-120 disjoint, landing in
+# the requested 100-150 held-out range.
+EVAL_PER_CATEGORY = 55
 GEN_BATCH_SIZE = 25               # queries requested per qwen generation call
 SPOTCHECK_N = 20                  # eval labels flagged for human review
 
