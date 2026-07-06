@@ -1,0 +1,68 @@
+{
+  "backend": "local",
+  "cost": {
+    "note": "local inference: ~0 marginal $ cost (electricity only)"
+  },
+  "n": 130,
+  "route_accuracy": 0.8384615384615385,
+  "use_arxiv_accuracy": 0.9692307692307692,
+  "use_web_accuracy": 0.8692307692307693,
+  "macro_f1": 0.7524740492482428,
+  "per_route": {
+    "arxiv": {
+      "precision": 0.8117647058823529,
+      "recall": 0.9857142857142858,
+      "f1": 0.8903225806451613,
+      "support": 70
+    },
+    "web": {
+      "precision": 1.0,
+      "recall": 0.8918918918918919,
+      "f1": 0.9428571428571428,
+      "support": 37
+    },
+    "both": {
+      "precision": 0.7,
+      "recall": 0.30434782608695654,
+      "f1": 0.42424242424242425,
+      "support": 23
+    },
+    "neither": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    }
+  },
+  "confusion_gold_x_pred": {
+    "arxiv": {
+      "arxiv": 69,
+      "web": 0,
+      "both": 0,
+      "neither": 1
+    },
+    "web": {
+      "arxiv": 0,
+      "web": 33,
+      "both": 3,
+      "neither": 1
+    },
+    "both": {
+      "arxiv": 16,
+      "web": 0,
+      "both": 7,
+      "neither": 0
+    },
+    "neither": {
+      "arxiv": 0,
+      "web": 0,
+      "both": 0,
+      "neither": 0
+    }
+  },
+  "latency_s": {
+    "mean": 0.9719276352615243,
+    "p50": 0.9339183749998483,
+    "p95": 1.1493000419998225
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "backend": "openai",
+  "cost": {
+    "note": "cost estimated from mean prompt/output size; classify() does not surface token usage"
+  },
+  "n": 130,
+  "route_accuracy": 0.8538461538461538,
+  "use_arxiv_accuracy": 0.9846153846153847,
+  "use_web_accuracy": 0.8692307692307693,
+  "macro_f1": 0.7820419757505851,
+  "per_route": {
+    "arxiv": {
+      "precision": 0.8271604938271605,
+      "recall": 0.9571428571428572,
+      "f1": 0.8874172185430464,
+      "support": 70
+    },
+    "web": {
+      "precision": 1.0,
+      "recall": 0.9459459459459459,
+      "f1": 0.9722222222222222,
+      "support": 37
+    },
+    "both": {
+      "precision": 0.6428571428571429,
+      "recall": 0.391304347826087,
+      "f1": 0.4864864864864865,
+      "support": 23
+    },
+    "neither": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    }
+  },
+  "confusion_gold_x_pred": {
+    "arxiv": {
+      "arxiv": 67,
+      "web": 0,
+      "both": 3,
+      "neither": 0
+    },
+    "web": {
+      "arxiv": 0,
+      "web": 35,
+      "both": 2,
+      "neither": 0
+    },
+    "both": {
+      "arxiv": 14,
+      "web": 0,
+      "both": 9,
+      "neither": 0
+    },
+    "neither": {
+      "arxiv": 0,
+      "web": 0,
+      "both": 0,
+      "neither": 0
+    }
+  },
+  "latency_s": {
+    "mean": 2.9505360288679814,
+    "p50": 2.3446848330204375,
+    "p95": 5.895228790992405
+  }
+}

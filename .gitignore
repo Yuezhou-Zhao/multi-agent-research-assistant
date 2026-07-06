@@ -21,3 +21,7 @@ build.log
 # QLoRA data-prep generated artifacts (regenerable; the human-reviewed
 # eval_spotcheck.csv is the exception — force-add it when filled in)
 experiments/qlora_supervisor/data/
+
+# QLoRA training artifacts: LoRA adapter + checkpoints (~86MB, regenerable
+# from committed train_set.jsonl via train_lora.py). Keep the repo lean.
+experiments/qlora_supervisor/train/
