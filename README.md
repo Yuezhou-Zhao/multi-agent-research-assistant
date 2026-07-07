@@ -406,6 +406,23 @@ Disclosed rather than hidden:
 
 See Section 8 of the design doc for the full stopping-rules table.
 
+### Next steps
+
+Each open limitation has a concrete follow-up experiment:
+
+- **HyDE at scale.** The n=10 A/B improvement (1.40 → 1.20 rollbacks) traces to
+  a single query, so it may be noise. Rerun `experiments/hyde_ab.py` at **n=50**
+  to determine whether the effect survives a larger sample or disappears.
+- **Larger L3 ground truth.** The measured cascade F1 (0.562) rests on only 12
+  gradable escalate-band sentences. Extend `experiments/measure_l3.py` to a
+  larger batch of human-annotated examples so the escalate-band judge's
+  reliability becomes a stable estimate rather than a directional one.
+- **NLI-based grounding.** L2b's embedding similarity cannot separate a
+  correctly-cited from a wrongly-cited same-subfield paper (the Section 8
+  "embedding ceiling"). Replace the cosine check with an NLI model — testing
+  whether the cited chunk entails the sentence — to see if it resolves the
+  same-subdomain misattribution the embedding signal misses.
+
 ---
 
 ## Design doc
