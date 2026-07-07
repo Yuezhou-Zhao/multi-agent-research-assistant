@@ -1,6 +1,6 @@
 # Academic Research Agent — Multi-Agent Self-Correcting Research System
 
-A production-grade research assistant that answers academic questions by
+A production-minded research assistant that answers academic questions by
 retrieving across arXiv + the web, drafting a cited synthesis, and
 **self-correcting** through a three-layer verification cascade that keeps
 LLM cost bounded by construction.
@@ -19,7 +19,6 @@ a cheap-first hallucination cascade, and a hard global budget cap.
 
 | Challenge most demos ignore | What this system does |
 |---|---|
-| Query semantics ≠ answer semantics | **HyDE pre-flight** operator, run once and cached (never re-invoked on rollback) |
 | Retrieval precision vs. generation context | **Native parent-child chunking** — 50 lines of hand-written Python, 128-token children for recall, 512-token parents for context |
 | Hallucination detection without a slow LLM judge | **Three-layer cascade**: calibrated embedding guardrail (0 LLM, <2 ms) → citation grounding (0 LLM) → LLM judge only on the uncertain middle band |
 | "Multi-agent" that's really sequential nodes | **True parallel** arXiv + web sub-agents via LangGraph `Send`, independent tool sets, no shared intermediate state |
@@ -56,6 +55,11 @@ the harness that caught it is [`scripts/demo_dryrun.py`](scripts/demo_dryrun.py)
 
 ## Architecture
 
+![System overview — pipeline, three-layer cascade, and measured results](docs/system_overview.svg)
+
+<details>
+<summary>Text version of the flow (mermaid)</summary>
+
 ```mermaid
 flowchart TD
     Q[User query] --> HyDE[HyDE pre-flight<br/>once-only, cached]
@@ -69,7 +73,8 @@ flowchart TD
     W --> M
     M --> CE[Context eval<br/>coverage check, 0 LLM]
 
-    CE -->|coverage low| P
+    CE -->|coverage low, ≤1 refinement| RF[Refined search<br/>one extra retrieval pass]
+    RF --> CE
     CE -->|coverage ok| WR[Writer<br/>index-based citations]
 
     WR --> C[Critic cascade]
@@ -82,13 +87,14 @@ flowchart TD
     end
 
     C -->|approve| F[Finalizer<br/>resolve indices → real arXiv IDs]
-    C -->|reject, budget left| WR
-    C -->|reject, refine| P
-    C -->|budget exhausted| FF[Force-finalize]
+    C -->|reject, loops left| S
+    C -->|loops or budget exhausted| FF[Force-finalize]
 
     F --> OUT[Cited answer]
     FF --> OUT
 ```
+
+</details>
 
 **Hybrid architecture, stated precisely:**
 
@@ -97,6 +103,9 @@ flowchart TD
   LangGraph's `Send` API. The Supervisor classifies each query and dispatches
   one or both; results merge only at a fan-in node. Independent tools,
   parallel execution, no shared intermediate state — the strict definition.
+  ("Parallel" stated precisely: async-concurrent within one process/event
+  loop — the independence is about tool sets and state, not distributed
+  infrastructure.)
 - **Synthesis tier — multi-role state machine.** Planner, Writer, and Critic
   share `AcademicResearchState` on purpose: their data dependencies are tight
   (Writer needs the Planner's sub-questions; Critic needs the Writer's draft).
@@ -138,21 +147,26 @@ budget cap forces a finalize one step before the theoretical ceiling.
 
 ## Quantitative results
 
-### HyDE A/B (n = 10 queries)
+### HyDE A/B — a negative result, reported honestly (n = 10 queries)
 
-Each query run twice — HyDE off vs. on — holding everything else fixed.
+Each query run twice — HyDE off vs. on — everything else fixed.
 
 |                    | HyDE off | HyDE on |
 |--------------------|:--------:|:-------:|
-| mean rollbacks     |   1.40   | **1.20** |
+| mean rollbacks     |   1.40   |   1.20  |
 | mean chunk SF      |   0.643  |  0.643  |
-| mean rerank score  |   2.313  | **2.361** |
+| mean rerank score  |   2.313  |  2.361  |
 | approved / n       |   9/10   |  9/10   |
 
-HyDE's measurable effect on this corpus is a modest reduction in Critic
-rollbacks (fewer correction loops) at equal answer quality — not a dramatic
-retrieval win. Reported honestly rather than cherry-picked; full per-query
-table in [`experiments/results/hyde_ab.md`](experiments/results/hyde_ab.md).
+**HyDE did not measurably help on this corpus.** Retrieval-quality metrics
+(rerank score, chunk survival-function) are flat across 8 of 10 queries, and
+the entire aggregate rollback improvement (1.40 → 1.20) traces to a *single*
+query (Q2: 3 → 1 rollbacks); the other nine are unchanged. It's **kept on by
+default only because it does no measurable harm and costs one cached LLM call
+(never re-invoked on rollback)** — not because it's a demonstrated win at this
+scale. The A/B harness ([`experiments/hyde_ab.py`](experiments/hyde_ab.py)) is
+there to re-test at larger *n* before making any stronger claim. Full
+per-query table: [`experiments/results/hyde_ab.md`](experiments/results/hyde_ab.md).
 
 ### Cascade effectiveness (n = 10 queries, 60 scored sentences)
 
@@ -174,7 +188,15 @@ hallucinated:
 | | F1 | note |
 |---|---:|---|
 | Gamma alone (L1) | **0.500** | 19 hallucinated sentences slip into the `approve` band — the Semantic Illusion |
-| Full cascade (+ L3 on escalates) | **0.600** | the LLM judge lifts F1 by 10 pts — the third layer earning its place |
+| Full cascade, oracle L3 (upper bound) | 0.600 | assumes a perfect judge on the escalate band — shows the cascade's headroom |
+| Full cascade, **measured L3** | **0.562** | the *real* gpt-4o-mini judge run on the escalate band: catches all 6 hallucinated (recall 1.0) but over-rejects 4 correct (precision 0.60), so it lands just below the oracle |
+
+The measured 0.562 is the honest end-to-end number (no oracle). The judge on
+the hardest escalate-band sentences is conservative — it catches every
+hallucination but rejects some correct citations too — which is exactly why
+it sits just below the 0.600 upper bound. Small-n (12 gradable escalate
+sentences), so directional. Breakdown:
+[`cascade_l3_measured.md`](experiments/results/cascade_l3_measured.md).
 
 That the Gamma layer misses hallucinations which *look* distributionally
 normal is exactly why the **L2b citation-grounding check** was added: against
@@ -201,7 +223,8 @@ and [`experiments/results/cascade_f1.md`](experiments/results/cascade_f1.md).
 > unlabeled* self-consistency re-run taken **after** the Section 4.9
 > writer-prompt hardening; that change made the Writer more cautious (more
 > `escalate`), which is why its resolve rate (58.3%) sits below the labeled
-> batch's (75.4%). Band distribution = the shipped post-fix system;
+> batch's (75.4% — 49/65, band counts in
+> [`cascade_f1.md`](experiments/results/cascade_f1.md)). Band distribution = the shipped post-fix system;
 > correctness metrics = the labeled pre-fix batch.
 
 ---
@@ -387,7 +410,7 @@ See Section 8 of the design doc for the full stopping-rules table.
 
 ## Design doc
 
-The complete rationale — every architectural decision, the interview-question
-inventory, worst-case budget math, and the evaluation methodology — is in
-[`agent_system_design_v2.md`](agent_system_design_v2.md). This README is the
+The complete rationale — every architectural decision, the FAQ / design-
+rationale inventory, worst-case budget math, and the evaluation methodology —
+is in [`agent_system_design_v2.md`](agent_system_design_v2.md). This README is the
 summary; that document is the source of truth.

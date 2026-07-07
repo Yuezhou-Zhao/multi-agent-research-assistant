@@ -101,8 +101,11 @@ def compute():
         f"{sum(1 for r in rows if r['label'] == 'correct')} correct)\n"
         f"- Gamma-only F1: **{gamma_f1:.3f}** "
         f"(resolved-band only, n = {len(resolved)})\n"
-        f"- Final F1: **{final_f1:.3f}** "
-        f"(escalates given oracle-L3 upper bound; n = {len(rows)})\n"
+        f"- Final F1 (oracle L3, upper bound): **{final_f1:.3f}** "
+        f"(escalates assumed judged correctly; n = {len(rows)})\n"
+        f"- Final F1 (measured L3): the actual gpt-4o-mini judge run on the "
+        f"escalate band — see `cascade_l3_measured.md` "
+        f"(`python -m experiments.measure_l3`).\n"
     )
     print(f"\nsaved: {out}")
 
