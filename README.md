@@ -12,8 +12,7 @@ upgrades, no managed vector DB, no framework black boxes. The interesting
 engineering is in the parts most demos skip: parallel multi-agent retrieval,
 a cheap-first hallucination cascade, and a hard global budget cap.
 
-> **Author:** Yuezhou Zhao · Independent Research, advised by Prof. Parijat
-> Dube (Columbia/NYU) · Feb 2026 – Present
+> **Author:** Yuezhou Zhao · Independent Research
 
 ---
 
