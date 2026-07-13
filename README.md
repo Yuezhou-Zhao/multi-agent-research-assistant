@@ -1,7 +1,6 @@
 # Academic Research Agent — Multi-Agent Self-Correcting Research System
 
-<!-- TODO after creating the GitHub repo: replace OWNER/REPO in the badge URL -->
-![tests](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)
+![tests](https://github.com/Yuezhou-Zhao/academic-research-agent/actions/workflows/ci.yml/badge.svg)
 
 A production-minded research assistant that answers academic questions by
 retrieving across arXiv + the web, drafting a cited synthesis, and
