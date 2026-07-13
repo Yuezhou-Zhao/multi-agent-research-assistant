@@ -41,18 +41,33 @@ COPY requirements.txt .
 ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 ARG PIP_EXTRA_INDEX_URL=https://pypi.org/simple
 
+# Three separate RUN layers so a flaky network resumes from the last
+# completed layer (torch alone is ~200 MB) instead of restarting the
+# whole install; the BuildKit cache mount de-duplicates downloads
+# across rebuilds.
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade --default-timeout=1000 --retries 10 \
-        --index-url ${PIP_INDEX_URL} \
-        --extra-index-url ${PIP_EXTRA_INDEX_URL} \
-        pip \
-    && pip install --default-timeout=1000 --retries 10 \
-        --index-url https://download.pytorch.org/whl/cpu \
-        torch==2.12.1 \
-    && pip install --default-timeout=1000 --retries 10 \
-        --index-url ${PIP_INDEX_URL} \
-        --extra-index-url ${PIP_EXTRA_INDEX_URL} \
-        -r requirements.txt
+    pip install \
+    --upgrade \
+    --default-timeout=1000 \
+    --retries=10 \
+    --index-url ${PIP_INDEX_URL} \
+    --extra-index-url ${PIP_EXTRA_INDEX_URL} \
+    pip
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install \
+    --default-timeout=1000 \
+    --retries=10 \
+    --index-url https://download.pytorch.org/whl/cpu \
+    torch==2.12.1
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install \
+    --default-timeout=1000 \
+    --retries=10 \
+    --index-url ${PIP_INDEX_URL} \
+    --extra-index-url ${PIP_EXTRA_INDEX_URL} \
+    -r requirements.txt
 
 # Application source. tests/, scratchpad, and the built index are
 # excluded via .dockerignore — index/ is mounted as a volume in

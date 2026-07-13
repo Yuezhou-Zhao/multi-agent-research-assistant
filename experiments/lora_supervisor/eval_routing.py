@@ -76,15 +76,16 @@ async def _openai_router(queries: list[str]) -> tuple[list[dict], list[float], d
     return decisions, latencies, cost
 
 
-def _local_router(queries: list[str], adapter_dir: str):
-    """Fine-tuned Qwen2.5-1.5B + LoRA adapter on MPS. Greedy decode of the
-    JSON label. Returns (decisions, latencies, cost_info)."""
+def _local_router(queries: list[str], adapter_dir: str | None):
+    """Qwen2.5-1.5B on MPS — with the LoRA adapter when `adapter_dir` is
+    given, or the bare base model (zero-shot control) when it is None.
+    Greedy decode of the JSON label. Returns (decisions, latencies,
+    cost_info)."""
     import torch
     try:  # peft 0.19.1 ↔ torch 2.12.1 shim (see train_lora.py)
         import torch.distributed.tensor  # noqa: F401
     except Exception:  # noqa: BLE001
         pass
-    from peft import PeftModel
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     from .format_dataset import BASE_MODEL
@@ -92,7 +93,11 @@ def _local_router(queries: list[str], adapter_dir: str):
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     tok = AutoTokenizer.from_pretrained(BASE_MODEL)
     base = AutoModelForCausalLM.from_pretrained(BASE_MODEL, torch_dtype=torch.float16)
-    model = PeftModel.from_pretrained(base, adapter_dir).to(device).eval()
+    if adapter_dir:
+        from peft import PeftModel
+        model = PeftModel.from_pretrained(base, adapter_dir).to(device).eval()
+    else:
+        model = base.to(device).eval()
 
     decisions, latencies = [], []
     for q in queries:
@@ -188,7 +193,11 @@ def _print_report(backend: str, result: dict, cost: dict) -> None:
 async def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--backend", choices=["openai", "local"], required=True)
-    parser.add_argument("--adapter", help="LoRA adapter dir (local backend)")
+    parser.add_argument(
+        "--adapter",
+        help="LoRA adapter dir (local backend). Omit to run the bare base "
+        "model as the zero-shot control.",
+    )
     parser.add_argument("--out", help="write JSON result to this path")
     args = parser.parse_args()
 
@@ -201,15 +210,18 @@ async def main() -> int:
         decisions, latencies, cost = await _openai_router(queries)
     else:
         if not args.adapter:
-            raise SystemExit("--adapter required for --backend local")
+            print("[eval] no --adapter given: running the BARE base model "
+                  "(zero-shot control)")
         decisions, latencies, cost = _local_router(queries, args.adapter)
 
+    backend_label = args.backend if (args.backend == "openai" or args.adapter) \
+        else "local-zeroshot"
     result = _score(gold, decisions, latencies)
-    _print_report(args.backend, result, cost)
+    _print_report(backend_label, result, cost)
 
     if args.out:
         Path(args.out).write_text(json.dumps(
-            {"backend": args.backend, "cost": cost, **result}, indent=2))
+            {"backend": backend_label, "cost": cost, **result}, indent=2))
         print(f"wrote {args.out}")
     return 0
 

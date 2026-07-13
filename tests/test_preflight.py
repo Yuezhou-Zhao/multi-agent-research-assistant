@@ -5,6 +5,8 @@ Gate tests use a fake LLM client so the boundary conditions (word count,
 cosine similarity) are deterministic rather than depending on whatever a
 live model happens to generate.
 """
+import os
+
 import numpy as np
 import pytest
 
@@ -96,6 +98,10 @@ class TestSemanticQualityGate:
         assert used is False
 
 
+@pytest.mark.skipif(
+    not os.getenv("OPENAI_API_KEY"),
+    reason="live OpenAI call — skipped when no API key (e.g. CI)",
+)
 class TestRealIntegration:
     """Live OpenAI call — confirms the operator works end-to-end, not just
     its gate boundary logic."""

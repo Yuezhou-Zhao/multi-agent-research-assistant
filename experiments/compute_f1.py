@@ -45,8 +45,10 @@ def _binary_f1(tp: int, fp: int, fn: int) -> float:
 
 def compute():
     rows = []
+    all_rows = []
     with open(LABELS_PATH) as f:
         for row in csv.DictReader(f):
+            all_rows.append(row["gamma_decision"].strip())
             label = row["label"].strip().lower()
             if label not in VALID_LABELS:
                 continue
@@ -93,19 +95,48 @@ def compute():
     print(f"  Gamma-only F1: {gamma_f1:.3f}  (n_resolved = {len(resolved)})")
     print(f"  Final F1:      {final_f1:.3f}  (n_total = {len(rows)}, n_escalate = {len(escalates)})")
 
+    # Labeled-batch band distribution (all 65 rows incl. uncertain) — the
+    # README's "75.4% on the labeled batch" figure sources from here.
+    n_all = len(all_rows)
+    band = {b: all_rows.count(b) for b in ("approve", "reject", "escalate")}
+    n_resolved_all = band["approve"] + band["reject"]
+
+    # If the measured-L3 run exists, surface its number instead of a bare
+    # pointer (measure_l3.py writes cascade_l3_measured.md).
+    measured_line = (
+        "- Final F1 (measured L3): the actual gpt-4o-mini judge run on the "
+        "escalate band — run `python -m experiments.measure_l3` to produce "
+        "`cascade_l3_measured.md`.\n"
+    )
+    l3_md = RESULTS_DIR / "cascade_l3_measured.md"
+    if l3_md.exists():
+        import re
+        m = re.search(r"\*\*measured\*\* L3 \| \*\*([0-9.]+)\*\*", l3_md.read_text())
+        if m:
+            measured_line = (
+                f"- Final F1 (measured L3): **{m.group(1)}** — the actual "
+                f"gpt-4o-mini judge on the escalate band; see "
+                f"`cascade_l3_measured.md`.\n"
+            )
+
     out = RESULTS_DIR / "cascade_f1.md"
     out.write_text(
         "## Cascade F1 — Section 5.3 (positive class = hallucinated)\n\n"
-        f"- Labeled rows: **{len(rows)}** "
+        f"- Labeled batch: **{n_all}** sentences; band distribution "
+        f"approve **{band['approve']}** / reject **{band['reject']}** / "
+        f"escalate **{band['escalate']}** → Gamma-only resolve rate "
+        f"**{n_resolved_all}/{n_all} = {n_resolved_all / n_all:.1%}** "
+        f"(the README's labeled-batch figure; the post-fix self-consistency "
+        f"batch resolves 58.3% — see `cascade.md`)\n"
+        f"- Binary-F1 rows: **{len(rows)}** "
         f"({sum(1 for r in rows if r['label'] == 'hallucinated')} hallucinated, "
-        f"{sum(1 for r in rows if r['label'] == 'correct')} correct)\n"
+        f"{sum(1 for r in rows if r['label'] == 'correct')} correct; "
+        f"`uncertain` dropped)\n"
         f"- Gamma-only F1: **{gamma_f1:.3f}** "
         f"(resolved-band only, n = {len(resolved)})\n"
         f"- Final F1 (oracle L3, upper bound): **{final_f1:.3f}** "
         f"(escalates assumed judged correctly; n = {len(rows)})\n"
-        f"- Final F1 (measured L3): the actual gpt-4o-mini judge run on the "
-        f"escalate band — see `cascade_l3_measured.md` "
-        f"(`python -m experiments.measure_l3`).\n"
+        + measured_line
     )
     print(f"\nsaved: {out}")
 

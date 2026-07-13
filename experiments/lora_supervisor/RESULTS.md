@@ -7,18 +7,26 @@ was scored on. Numbers are measured, not tuned toward a target.
 
 ## Head-to-head (n=130 human-corrected eval set)
 
-| Metric | gpt-4o-mini (API baseline) | Qwen2.5-1.5B + LoRA (local student) |
-|---|---:|---:|
-| **route accuracy** | **0.854** | **0.838** |
-| use_arxiv accuracy | 0.985 | 0.969 |
-| use_web accuracy | 0.869 | 0.869 |
-| macro F1 | 0.782 | 0.752 |
-| `both`-class F1 | 0.486 | 0.424 |
-| **latency mean** | 2.95 s | **0.97 s** |
-| **latency p95** | 5.90 s | **1.15 s** |
-| marginal cost / call | ~$0.000034 (API) | ~$0 (local) |
+| Metric | gpt-4o-mini (API baseline) | Qwen2.5-1.5B **zero-shot** (control) | Qwen2.5-1.5B + LoRA (local student) |
+|---|---:|---:|---:|
+| **route accuracy** | **0.854** | 0.446 | **0.838** |
+| use_arxiv accuracy | 0.985 | 0.477 | 0.969 |
+| use_web accuracy | 0.869 | 0.600 | 0.869 |
+| macro F1 | 0.782 | 0.327 | 0.752 |
+| `both`-class F1 | 0.486 | 0.000 | 0.424 |
+| **latency mean** | 2.95 s | 0.54 s | **0.97 s** |
+| **latency p95** | 5.90 s | 0.58 s | **1.15 s** |
+| marginal cost / call | ~$0.000034 (API) | ~$0 (local) | ~$0 (local) |
 
 ## Takeaways
+
+- **The fine-tuning did the work — measured, not assumed.** The same base
+  model zero-shot scores **0.446** route accuracy with `both`-class F1
+  **0.000** (it never predicts the combined route and over-predicts `web`,
+  recall 0.97 at precision 0.35). LoRA lifts route accuracy **+39.2 points**
+  to 0.838 — from roughly coin-flip to within 1.6 points of the teacher.
+  (Zero-shot latency is lower simply because its outputs are shorter and
+  often malformed; it is not a real speed advantage.)
 
 - **Near-parity routing at a fraction of the latency.** The 1.5B local student
   lands within **1.6 points** of gpt-4o-mini on route accuracy (0.838 vs
@@ -82,4 +90,14 @@ HF_HUB_OFFLINE=1 python -m experiments.lora_supervisor.train_lora   # → train/
 python -m experiments.lora_supervisor.eval_routing --backend openai --out data/baseline_gpt4omini.json
 HF_HUB_OFFLINE=1 python -m experiments.lora_supervisor.eval_routing \
     --backend local --adapter train/adapter --out data/student_qwen1.5b_lora.json
+# zero-shot control (bare base model, no adapter):
+HF_HUB_OFFLINE=1 python -m experiments.lora_supervisor.eval_routing \
+    --backend local --out data/student_qwen1.5b_zeroshot.json
 ```
+
+## Future work
+
+- **Model-size ablation** (Qwen2.5-0.5B / 3B): 1.5B was chosen as the
+  smallest tier expected to reliably emit structured JSON, not ablated.
+- **Closing the `both`-class recall gap** needs a stronger teacher signal on
+  that class (human-labeled `both` training data), not more oversampling.

@@ -7,6 +7,8 @@ This file covers what's new in Week 4: SupervisorAgent.classify()'s real
 LLM classification (live gpt-4o-mini calls, representative query types),
 and the supervisor_node / merge_results_node wrappers around it.
 """
+import os
+
 import pytest
 
 from backend.nodes.supervisor import SupervisorAgent, merge_results_node, supervisor_node
@@ -19,6 +21,10 @@ def base_state(**overrides):
     return state
 
 
+@pytest.mark.skipif(
+    not os.getenv("OPENAI_API_KEY"),
+    reason="live gpt-4o-mini calls — skipped when no API key (e.g. CI)",
+)
 class TestSupervisorAgentClassification:
     """Real gpt-4o-mini calls — classification correctness on
     representative query types (Section 4.1's decision logic)."""

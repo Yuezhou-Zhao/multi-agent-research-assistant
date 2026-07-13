@@ -6,6 +6,11 @@ Analysis uses the human-reviewed `label` column from `experiments/results/cascad
 
 ### Per-label sim distribution
 
+*Rows here total **58**, not 65: these are the citation-carrying subset of
+the 65 labeled sentences (only cited sentences can be grounding-scored).
+All 37 hallucinated sentences carry citations; 6 `correct` and 1 `uncertain`
+do not — hence 13 correct / 8 uncertain below vs. the full batch's 19 / 9.*
+
 | label | n | mean | median | min | max | stdev |
 |---|---:|---:|---:|---:|---:|---:|
 | hallucinated | 37 | 0.674 | 0.676 | 0.508 | 0.848 | 0.083 |
@@ -69,8 +74,8 @@ Positive class = **hallucinated**. Uncertain rows dropped from the confusion mat
 
 ### Sentences the current threshold (0.7) mis-classifies
 
-- FP (AI-labeled 'correct' but sim < threshold): **3**
-- FN (AI-labeled 'hallucinated' but sim ≥ threshold): **14**
+- FP (labeled 'correct' but sim < threshold): **3**
+- FN (labeled 'hallucinated' but sim ≥ threshold): **14**
 
 Sample FNs (misattributions L2b would let through):
   - q1s2  sim=0.762  cited=['2403.15450v1', '2602.07739v2']

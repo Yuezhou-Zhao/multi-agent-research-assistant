@@ -28,3 +28,10 @@ experiments/lora_supervisor/data/
 # LoRA training artifacts: adapter + checkpoints (~86MB, regenerable
 # from committed train_set.jsonl via train_lora.py). Keep the repo lean.
 experiments/lora_supervisor/train/
+
+# Local corpus artifacts — 65 arXiv PDFs (~100 MB, third-party copyright)
+# and the id list / labels bundle used to build them. Regenerable via
+# rag/indexer.py; never ship these.
+papers/
+ids.txt
+arXiv_papers_in_cascade_labels.zip

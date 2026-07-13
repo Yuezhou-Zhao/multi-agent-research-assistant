@@ -1,5 +1,8 @@
 # Academic Research Agent — Multi-Agent Self-Correcting Research System
 
+<!-- TODO after creating the GitHub repo: replace OWNER/REPO in the badge URL -->
+![tests](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)
+
 A production-minded research assistant that answers academic questions by
 retrieving across arXiv + the web, drafting a cited synthesis, and
 **self-correcting** through a three-layer verification cascade that keeps
@@ -24,6 +27,26 @@ a cheap-first hallucination cascade, and a hard global budget cap.
 | "Multi-agent" that's really sequential nodes | **True parallel** arXiv + web sub-agents via LangGraph `Send`, independent tool sets, no shared intermediate state |
 | Cost spiral in nested correction loops | **Global LLM budget cap (max 15 calls/query)** with documented worst-case math — ~$0.016/query ceiling |
 | Paying an API for a routing gate on every query | **Distilled the router into a local Qwen2.5-1.5B + LoRA** — within 1.6 pts of gpt-4o-mini accuracy at ~3–5× lower latency, on-device ([details](#local-inference-extension--distilling-the-router-with-lora)) |
+
+---
+
+## See it run
+
+![Approved answer: Gamma red-flags on suspect sentences, real resolved citations](docs/img/demo_answer.png)
+
+*A real query end-to-end: the Critic approves after one visible rollback; 🚩
+marks the sentences Gamma's L1 flagged as likely-hallucinated (2 of 6 in this
+run), and the Writer's `[N]` index citations arrive resolved to real arXiv
+IDs by the Finalizer.*
+
+<details>
+<summary>Live metrics panel + execution trace, and the whole run animated</summary>
+
+![Live metrics: LLM budget 5/15, coverage 0.854, cascade bands, approved status — above the nested execution trace](docs/img/demo_metrics.png)
+
+![The run animated: status planning → researching → writing → reviewing → approved](docs/img/demo_run.gif)
+
+</details>
 
 ---
 
@@ -240,14 +263,19 @@ API model was scored on (labels judged by an independent model, then
 human-corrected on the hard cases — see
 [`experiments/lora_supervisor/`](experiments/lora_supervisor/)).
 
-| Metric | gpt-4o-mini (API) | Qwen2.5-1.5B + LoRA (local) |
-|---|---:|---:|
-| **route accuracy** | 0.854 | **0.838** (−1.6 pt) |
-| macro F1 | 0.782 | 0.752 |
-| `both`-class F1 | 0.486 | 0.424 |
-| **latency mean** | 2.95 s | **0.97 s** (~3×) |
-| **latency p95** | 5.90 s | **1.15 s** (~5×) |
-| marginal cost / call | ~$0.000034 | ~$0 (local) |
+| Metric | gpt-4o-mini (API) | Qwen2.5-1.5B zero-shot (control) | Qwen2.5-1.5B + LoRA (local) |
+|---|---:|---:|---:|
+| **route accuracy** | 0.854 | 0.446 | **0.838** (−1.6 pt) |
+| macro F1 | 0.782 | 0.327 | 0.752 |
+| `both`-class F1 | 0.486 | 0.000 | 0.424 |
+| **latency mean** | 2.95 s | 0.54 s | **0.97 s** (~3×) |
+| **latency p95** | 5.90 s | 0.58 s | **1.15 s** (~5×) |
+| marginal cost / call | ~$0.000034 | ~$0 | ~$0 (local) |
+
+The zero-shot column is the control that proves the fine-tuning mattered:
+the bare base model routes at 0.446 (never predicting `both` at all) —
+**LoRA lifts it +39.2 points**, from roughly coin-flip to within 1.6 points
+of the teacher.
 
 **Read the whole row, not just the flattering half.** The student lands within
 **1.6 points** of gpt-4o-mini on routing while cutting mean latency ~3× and the
@@ -344,8 +372,12 @@ download step — the mirror override exists for exactly that case.
 ## Testing
 
 ```bash
-pytest -q        # 104 tests
+pytest -q        # 104 tests: 99 run keyless; 5 live-LLM integration
+                 # tests auto-skip when OPENAI_API_KEY is absent (CI)
 ```
+
+CI runs the keyless suite on every push
+([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 Coverage spans the parts that are easy to get subtly wrong: circuit-breaker /
 budget routing, parent-child chunk round-tripping, guardrail cascade routing,
