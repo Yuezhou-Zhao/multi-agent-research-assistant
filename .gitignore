@@ -12,14 +12,12 @@ index/
 chainlit.md
 .files/
 
-# In-progress labeling artifacts — user manages these outside git
+# In-progress labeling artifacts (superseded by the finalized
+# cascade_labels.csv)
 experiments/results/cascade_labels_draft.csv
 
 # Docker build transcript (tee output, regenerable)
 build.log
-
-
-
 
 # LoRA data-prep generated artifacts (regenerable; the human-reviewed
 # eval_spotcheck.csv is the exception — force-add it when filled in)
@@ -29,9 +27,9 @@ experiments/lora_supervisor/data/
 # from committed train_set.jsonl via train_lora.py). Keep the repo lean.
 experiments/lora_supervisor/train/
 
-# Local corpus artifacts — 65 arXiv PDFs (~100 MB, third-party copyright)
-# and the id list / labels bundle used to build them. Regenerable via
-# rag/indexer.py; never ship these.
+# Local corpus artifacts — 65 arXiv PDFs (~100 MB, third-party
+# copyright) and the id list / labels bundle used to build them.
+# Regenerable via rag/indexer.py; never ship these.
 papers/
 ids.txt
 arXiv_papers_in_cascade_labels.zip

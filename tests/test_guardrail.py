@@ -1,4 +1,4 @@
-"""Tests for GammaGuardrail (Section 4.7): cascade routing correctness and
+"""Tests for GammaGuardrail: cascade routing correctness and
 a real (non-mocked) calibration/scoring integration check.
 
 Cascade-boundary tests monkeypatch survival_score() to return controlled

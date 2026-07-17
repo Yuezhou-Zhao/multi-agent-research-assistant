@@ -1,4 +1,4 @@
-"""Container smoke test — Section 7.2 Week 7 verify step.
+"""Container smoke test — end-to-end verify step.
 
 Runs one query end-to-end through the compiled graph and asserts the
 job hit a terminal status (`approved`, `force_finalized`, or

@@ -1,7 +1,7 @@
-"""Tests for the hand-written ParentChildChunker (Section 4.4).
+"""Tests for the hand-written ParentChildChunker.
 
 Focus: hash-prefixed ID collision avoidance and parent/child round-trip
-correctness — the two properties an interviewer would poke at first.
+correctness — the two properties easiest to get subtly wrong.
 """
 import pytest
 

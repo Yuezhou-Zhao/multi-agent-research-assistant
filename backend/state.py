@@ -1,7 +1,5 @@
 """AcademicResearchState — the shared state schema for the LangGraph
 orchestrator (Planner/Supervisor/Writer/Critic tier).
-
-See Section 3.1 of agent_system_design_v2.md for the authoritative spec.
 """
 from typing import Annotated, Literal, Optional, TypedDict
 
@@ -23,9 +21,9 @@ class AcademicResearchState(TypedDict):
     verified_chunks: list[dict]  # post-Gamma-filter
 
     # gamma_scores: per-chunk survival-function score from the calibrated
-    # embedding-distance guardrail (see evaluation/gamma_guardrail.py, Week 4).
+    # embedding-distance guardrail (see evaluation/gamma_guardrail.py).
     # This is a cheap prefilter score, not a statistical guarantee of
-    # correctness — do not describe it as such in docs or demo copy.
+    # correctness.
     gamma_scores: list[float]
 
     # Generation
@@ -79,7 +77,7 @@ def new_job_state(
     """Build the initial state for a job.
 
     hyde_enabled, sf_threshold, max_critic_loops, and max_llm_calls are
-    snapshotted here (Section 1.3 #6 / Section 4.6): later changes to a
+    snapshotted here: later changes to a
     Chainlit slider or toggle must not affect an in-flight job.
     """
     return AcademicResearchState(
@@ -117,10 +115,10 @@ def new_job_state(
 
 
 def llm_call_update(state: AcademicResearchState, calls: int = 1) -> dict:
-    """Shared accounting for Section 2.2's global LLM budget: every node
+    """Shared accounting for the global LLM budget: every node
     that invokes an LLM should merge this into its own partial update so
     total_llm_calls / llm_budget_exceeded stay correct for
-    route_after_critic and route_after_context_eval (Section 4.6), which
+    route_after_critic and route_after_context_eval, which
     only read these fields — they don't compute them.
     """
     new_total = state["total_llm_calls"] + calls

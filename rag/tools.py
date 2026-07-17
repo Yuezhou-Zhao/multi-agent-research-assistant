@@ -1,14 +1,14 @@
-"""arXiv API + Tavily wrappers (Section 4.2, Week 2 scope).
+"""arXiv API + Tavily wrappers.
 
 These are the retrieval-tool functions each sub-agent's independent tool
 set is built from:
   ArXivResearchAgent: arxiv_search_tool
-    (+ faiss_retriever_tool, pdf_parser_tool, calculator_tool — added when
-     the sub-agent itself is wired up in Week 5)
+    (+ faiss_retriever_tool, pdf_parser_tool, calculator_tool — wired
+     when the sub-agent itself is constructed)
   WebResearchAgent:   tavily_search_tool, url_scraper_tool
 
 Kept as plain async functions rather than LangChain @tool-wrapped callables:
-that wrapping happens once when the sub-agents are constructed (Week 5), so
+that wrapping happens once when the sub-agents are constructed, so
 these stay directly unit-testable without an agent runtime in the loop.
 
 arXiv's client library is synchronous under the hood (urllib); calls are
@@ -67,7 +67,7 @@ def _get_tavily_client():
 
 async def tavily_search_tool(query: str, max_results: int = 5) -> list[dict]:
     """Search the web via Tavily. Returns content in the same chunk shape
-    the Web sub-agent will merge alongside arxiv_chunks (Section 4.2)."""
+    the Web sub-agent will merge alongside arxiv_chunks."""
     client = _get_tavily_client()
     response = await client.search(query, max_results=max_results)
     return [

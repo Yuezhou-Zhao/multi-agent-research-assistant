@@ -1,17 +1,16 @@
-"""finalize_node / force_finalize_node — the two graph exits (Section 4.6).
+"""finalize_node / force_finalize_node — the two graph exits.
 
 finalize is the happy path: Critic approved the draft, so we commit it
 as final_answer and mark the job done. force_finalize is the graceful
 degradation path: either the outer circuit breaker exhausted
 (critic_loop_count >= max_critic_loops) or the global LLM budget hit its
 cap — in both cases we still return whatever the last draft was, since
-"no answer" is worse than "an answer with a degradation flag." Section
-2.2's whole point is that the budget is a hard ceiling with explicit
-degradation signaling.
+"no answer" is worse than "an answer with a degradation flag." The
+budget is a hard ceiling with explicit degradation signaling.
 
 Both nodes are zero-LLM.
 
-Section 4.8: the draft coming in uses 1-based `[N]` markers indexing
+The draft coming in uses 1-based `[N]` markers indexing
 into merged_chunks. resolve_citations() rewrites them to real
 `[source_id]` markers for the user-visible final_answer, and returns
 the ordered id list for the citations panel. Doing the resolution here

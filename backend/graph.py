@@ -1,12 +1,11 @@
 """LangGraph orchestrator — topology + routing/circuit-breaker logic.
 
-All node bodies are real as of Week 5 (Section 7.2) — this module is now
-purely the wiring layer between them plus the three routing functions
-(Section 4.6 / 4.1). Node logic lives in backend/nodes/*.py; the HyDE
-pre-flight operator (Section 4.3) is intentionally NOT a node here — per
-Section 2.1 it runs once, outside the state machine, before the graph is
-invoked, with its output frozen into state["search_payload"] by
-backend/main.py.
+This module is purely the wiring layer between the nodes plus the three
+routing functions. Node logic lives in backend/nodes/*.py; the HyDE
+pre-flight operator is intentionally NOT a node here — it runs once,
+outside the state machine, before the graph is invoked, with its output
+frozen into state["search_payload"] by the caller (backend/main.py or
+frontend/app.py).
 """
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
@@ -23,12 +22,12 @@ from backend.nodes.writer import writer_node
 from backend.state import AcademicResearchState
 
 
-# ── Routing functions (Section 4.6 / 4.1) — final logic, fully tested ──────
+# ── Routing functions ───────────────────────────────────────────────────────
 
 def route_after_supervisor(state: AcademicResearchState) -> list[Send]:
     """Fan-out to the ArXiv and/or Web sub-agents via LangGraph's Send API.
 
-    This is what makes the Researcher tier true Multi-Agent (Section 1.2):
+    This is what makes the Researcher tier genuinely multi-agent:
     concurrent, independent sub-agent dispatch rather than sequential nodes
     sharing state. Falls back to arxiv_agent if the Supervisor's decision
     names neither source.
@@ -86,7 +85,7 @@ def route_after_critic(state: AcademicResearchState) -> str:
 # ── Graph topology ──────────────────────────────────────────────────────────
 
 def build_graph() -> StateGraph:
-    """Wire up the node topology described in Section 2.1's diagram.
+    """Wire up the node topology.
 
     planner -> supervisor -(Send fan-out)-> {arxiv_agent, web_agent}
             -> merge_results -> context_eval -(route)-> {refine -> context_eval, writer}

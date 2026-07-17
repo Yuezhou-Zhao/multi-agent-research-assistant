@@ -1,19 +1,13 @@
-"""Threshold validation for the L2b citation-grounding check (Section 4.9).
+"""Threshold validation for the L2b citation-grounding check.
 
 Sweeps the GROUNDING_THRESHOLD in evaluation/citation_grounding.py against
 labeled cascade sentences: does the embedding-grounding similarity actually
 separate hallucinated (misattributed) citations from correct ones, and what
 threshold maximizes F1?
 
-Two label sources (--source):
-  final   (default) — the human-reviewed `label` column in
-                      experiments/results/cascade_labels.csv. THESE are the
-                      numbers that go into Section 4.9 + the README.
-  aidraft            — the AI-drafted `claude_suggested_label` in
-                      cascade_labels_draft.csv. Was the fast pre-review
-                      feedback loop; output is banner-marked as such and
-                      written to *_aidraft.md so it can't be mistaken for
-                      the final number.
+Labels: the human-reviewed `label` column in
+experiments/results/cascade_labels.csv — these are the numbers that go
+into the README.
 
 Method:
   1. Parse [XXXX.XXXXXvY] arxiv ids out of each labeled sentence.
@@ -21,7 +15,7 @@ Method:
   3. sim = cosine(encode(sentence), centroid(encode(cited_chunks))).
   4. Bucket sims by the chosen label column; report per-bucket distribution,
      confusion at the current GROUNDING_THRESHOLD, and the F1-optimal sweep.
-  5. Save results/threshold_validation{,_aidraft}.md + .json.
+  5. Save results/threshold_validation.md + .json.
 """
 import csv
 import json
@@ -117,7 +111,7 @@ def _print_sim_hist(sims: list[float], label: str, buckets: list[float]) -> str:
 def _confusion_at_threshold(rows_with_sims: list[dict], threshold: float) -> dict:
     """For threshold T, an L2b system that downgrades sim < T (i.e.
     predicts 'hallucinated' for sim < T, 'correct' for sim >= T).
-    Compute TP/FP/FN/TN vs claude_suggested_label."""
+    Compute TP/FP/FN/TN vs the human-reviewed label."""
     tp = fp = fn = tn = 0
     for r in rows_with_sims:
         if r["sim"] is None:
@@ -163,28 +157,12 @@ def _suggest_threshold(rows_with_sims: list[dict]) -> tuple[float, dict]:
 
 
 def main() -> int:
-    import argparse
-
     global LABEL_COL, LABELS_PATH, OUT_MD, OUT_JSON, BANNER
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--source", choices=["final", "aidraft"], default="final",
-        help="'final' = human-reviewed cascade_labels.csv (label col); "
-             "'aidraft' = cascade_labels_draft.csv (claude_suggested_label)",
-    )
-    args = parser.parse_args()
-    if args.source == "aidraft":
-        LABEL_COL = "claude_suggested_label"
-        LABELS_PATH = RESULTS_DIR / "cascade_labels_draft.csv"
-        OUT_MD = RESULTS_DIR / "threshold_validation_aidraft.md"
-        OUT_JSON = RESULTS_DIR / "threshold_validation_aidraft.json"
-        BANNER = "⚠️  AI-DRAFTED LABELS, PENDING HUMAN REVIEW"
-    else:
-        LABEL_COL = "label"
-        LABELS_PATH = RESULTS_DIR / "cascade_labels.csv"
-        OUT_MD = RESULTS_DIR / "threshold_validation.md"
-        OUT_JSON = RESULTS_DIR / "threshold_validation.json"
-        BANNER = "FINAL — human-reviewed labels"
+    LABEL_COL = "label"
+    LABELS_PATH = RESULTS_DIR / "cascade_labels.csv"
+    OUT_MD = RESULTS_DIR / "threshold_validation.md"
+    OUT_JSON = RESULTS_DIR / "threshold_validation.json"
+    BANNER = "FINAL — human-reviewed labels"
 
     encoder = SentenceTransformer("BAAI/bge-small-en-v1.5")
     _, metadata = load_index()
@@ -263,24 +241,16 @@ def main() -> int:
     best_t, cm_best = _suggest_threshold(rows_with_sims)
 
     # ── Console + markdown output ──────────────────────────────────
-    is_final = LABEL_COL == "label"
     intro = (
         "Analysis uses the human-reviewed `label` column from "
         "`experiments/results/cascade_labels.csv`. **These are the "
         "finalized labels** — the numbers here are the ones that go into "
-        "Section 4.9's final writeup and the README."
-        if is_final else
-        "Analysis uses `claude_suggested_label` from "
-        "`experiments/results/cascade_labels_draft.csv`. **These are "
-        "AI-drafted labels, not human-reviewed.** The number that goes "
-        "into Section 4.9's final writeup and the README must come from "
-        "the finalized human-reviewed `cascade_labels.csv`."
+        "the README."
     )
     md_lines = [
         f"# {BANNER}",
         "",
-        f"## Threshold validation (Section 4.9) — "
-        f"{'FINAL' if is_final else 'preliminary'}",
+        "## Threshold validation — FINAL",
         "",
         intro,
         "",

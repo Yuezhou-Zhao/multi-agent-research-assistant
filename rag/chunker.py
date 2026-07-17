@@ -1,4 +1,4 @@
-"""ParentChildChunker — hand-written, no LlamaIndex (Section 4.4 / 1.3 #3).
+"""ParentChildChunker — hand-written, no framework dependency.
 
 Resolves the retrieval-generation tension:
   Child (128 tokens, word-approx) -> FAISS index -> high embedding coherence

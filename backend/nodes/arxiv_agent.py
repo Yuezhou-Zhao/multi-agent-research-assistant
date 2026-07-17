@@ -1,6 +1,6 @@
-"""ArXivResearchAgent — sub-agent with independent tool set (Section 4.2).
+"""ArXivResearchAgent — sub-agent with independent tool set.
 
-Runs the Week 3 TwoStageRetriever over state["search_payload"] (HyDE
+Runs the TwoStageRetriever over state["search_payload"] (HyDE
 output or raw query) and pushes the results through the Gamma guardrail's
 filter_chunks so only chunks above sf_threshold reach the merged pool.
 Writes to state["arxiv_chunks"] and state["gamma_scores"] only — does NOT
@@ -11,17 +11,17 @@ receives a copy of state with the Supervisor's decision already made; the
 Supervisor won't route here unless supervisor_decision["use_arxiv"] is
 true (or the "neither" fallback in graph.py fired).
 
-Section 4.2 lists four tools for this sub-agent (arXiv API, FAISS,
-PDF parser, calculator). The FAISS retrieval is what runs by default
-here; the arXiv-API + PDF-parser + calculator tools are wired but not
-invoked in the base retrieval path, which is what Section 4.2's expected
-LLM-call count assumes. They exist so a future extension (an
+Four tools exist for this sub-agent (arXiv API, FAISS, PDF parser,
+calculator). The FAISS retrieval is what runs by default here; the
+arXiv-API + PDF-parser + calculator tools are wired but not invoked in
+the base retrieval path, which is what the budget's expected LLM-call
+count assumes. They exist so a future extension (an
 agent-loop where the LLM picks tools per sub-question) can call them
 without rewriting anything above.
 
 Budget: no LLM call in the base path — retrieval + Gamma filtering are
-both zero-LLM. Section 2.2's "1 call per invocation" line for this
-sub-agent accounts for the tool-picking loop mentioned above; when that
+both zero-LLM. The budget's "1 call per invocation" allowance for this
+sub-agent covers the tool-picking loop mentioned above; when that
 loop is not exercised (the current default), total_llm_calls is left
 unchanged here.
 """
@@ -61,9 +61,9 @@ def _get_guardrail() -> GammaGuardrail:
 
 
 # Independent tool set — listed here (not just referenced) so the "true
-# multi-agent" claim in Section 1.2 is enforceable by inspection: this
-# module has its own tool imports; web_agent.py has its own, disjoint set.
-TOOLS = [arxiv_search_tool, url_scraper_tool]  # + faiss_retriever_tool (via _get_retriever), + pdf_parser_tool (Week 6+)
+# multi-agent" claim is enforceable by inspection: this module has its
+# own tool imports; web_agent.py has its own, disjoint set.
+TOOLS = [arxiv_search_tool, url_scraper_tool]  # + faiss_retriever_tool (via _get_retriever), + pdf_parser_tool (future)
 
 
 async def arxiv_agent_node(state: AcademicResearchState) -> dict:

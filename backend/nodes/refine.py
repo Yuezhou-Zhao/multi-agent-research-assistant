@@ -1,4 +1,4 @@
-"""refine_node — inner active-retrieval loop (Section 2.1 / 4.6).
+"""refine_node — inner active-retrieval loop.
 
 Only reachable when route_after_context_eval decides coverage_score < 0.5
 AND refinement_count < 1 AND budget not exceeded. Its job: retrieve more
@@ -7,10 +7,10 @@ verified_chunks, bump refinement_count, then loop back to context_eval.
 
 Zero-LLM by design: coverage was decided by embeddings, and the refined
 retrieval reuses the ArXiv sub-agent's TwoStageRetriever with a targeted
-query. Section 2.2's "Refined Search (inner) 1 call per invocation"
-accounts for an optional tool-picking LLM call — the base path here
-doesn't invoke one, so total_llm_calls is left unchanged when
-refinement is triggered.
+query. The budget's "refined search: 1 call per invocation" allowance
+covers an optional tool-picking LLM call — the base path here doesn't
+invoke one, so total_llm_calls is left unchanged when refinement is
+triggered.
 """
 import numpy as np
 

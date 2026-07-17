@@ -1,4 +1,4 @@
-"""Section 3.1 immutability rule — mid-job sidebar changes must not
+"""Config immutability rule — mid-job sidebar changes must not
 affect a running job's snapshotted state.
 
 The rule is enforced structurally: frontend/app.py's on_message reads
@@ -71,7 +71,7 @@ class TestSnapshotIndependence:
 
 class TestBackendIsUiIndependent:
     """The graph layer must not read from chainlit's user_session —
-    that's the structural enforcement of Section 3.1. If a future edit
+    that's the structural enforcement of the snapshot rule. If a future edit
     slips a `cl.user_session.get(...)` into a node, this test catches it
     at CI time rather than at demo time."""
 
@@ -104,6 +104,6 @@ class TestBackendIsUiIndependent:
 
         assert not offenders, (
             f"chainlit imports leaked into non-UI code, which would let a "
-            f"running-job read sidebar state and break Section 3.1's snapshot "
+            f"running-job read sidebar state and break the per-job snapshot "
             f"rule: {offenders}"
         )

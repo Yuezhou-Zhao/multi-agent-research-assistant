@@ -1,4 +1,4 @@
-"""Cascade effectiveness experiment — Section 5.3.
+"""Cascade effectiveness experiment.
 
 For each Critic invocation in the pipeline, this script logs:
   - Gamma-only resolve rate: fraction of sentences where SF < 0.05 (reject)
@@ -8,7 +8,7 @@ For each Critic invocation in the pipeline, this script logs:
   - Per-sentence cascade decision + SF score + which chunks the L3
     judge would have seen.
 
-WHAT THIS SCRIPT DOES NOT COMPUTE: Section 5.3's third row, "Final F1
+WHAT THIS SCRIPT DOES NOT COMPUTE: the companion metric, "Final F1
 vs Gamma-only F1." That needs per-sentence ground-truth
 correct/hallucinated labels. This script instead dumps a labeling
 sheet (experiments/results/cascade_labels.csv) with every scored
@@ -83,7 +83,7 @@ async def run_one(query: str, hyde: HyDEOperator, graph, guardrail: GammaGuardra
 
     # Rescore the final draft's sentences for the labeling sheet.
     # cascade_decisions on state is from the LAST Critic pass, but the
-    # final_answer may be sanitized (Section 4.8) — rescore against the
+    # final_answer may be sanitized by L2a — rescore against the
     # sanitized text to keep sentence alignment consistent.
     sentences = GammaGuardrail._split_sentences(final["final_answer"] or "")
     sf_scores = guardrail.survival_score(sentences) if sentences else []
@@ -119,7 +119,7 @@ async def run_one(query: str, hyde: HyDEOperator, graph, guardrail: GammaGuardra
 
 
 def aggregate(runs: list[dict]) -> dict:
-    """Section 5.3's headline numbers, computed from the per-sentence
+    """Headline numbers, computed from the per-sentence
     Gamma decisions on the final drafts."""
     counter = Counter()
     for r in runs:
@@ -170,7 +170,7 @@ def write_labeling_sheet(runs: list[dict], path: Path) -> None:
 
 def to_markdown(runs: list[dict], agg: dict) -> str:
     lines = [
-        "## Cascade Effectiveness — Section 5.3 (n=" f"{agg['n_queries']}" ")",
+        "## Cascade Effectiveness (n=" f"{agg['n_queries']}" ")",
         "",
         f"Total sentences scored: **{agg['n_sentences']}**",
         "",
@@ -187,7 +187,7 @@ def to_markdown(runs: list[dict], agg: dict) -> str:
         f"{agg['counts'].get('reject', 0) / agg['n_sentences']:.1%} |",
         "",
         f"**Gamma-only resolve rate:** {agg['gamma_only_resolve_rate']:.1%} "
-        f"(Section 5.3 target: ≥ 60%)",
+        f"(design target: ≥ 60%)",
         "",
         f"**LLM Critic invocation rate (escalate band):** "
         f"{agg['llm_invocation_rate']:.1%}",

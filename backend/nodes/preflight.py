@@ -1,11 +1,10 @@
-"""HyDEOperator — idempotent pre-flight, NOT a LangGraph node (Section 4.3).
+"""HyDEOperator — idempotent pre-flight, NOT a LangGraph node.
 
-Executes once before the LangGraph state machine starts (Section 2.1's
-"Pre-flight Layer (OUTSIDE state machine)"). Its result is frozen into
-state["search_payload"] for the job's entire lifetime. This module lives
-under backend/nodes/ per Section 7.1's file structure, but `execute()` is
-called directly by the FastAPI handler (backend/main.py, Week 5) before
-the graph is invoked — it is deliberately not registered as a graph node.
+Executes once before the LangGraph state machine starts. Its result is
+frozen into state["search_payload"] for the job's entire lifetime. This
+module lives under backend/nodes/, but `execute()` is called directly by
+the callers (backend/main.py, frontend/app.py) before the graph is
+invoked — it is deliberately not registered as a graph node.
 
 Why decoupled from the graph: a standard demo would put HyDE inside the
 Researcher node, so a Critic rollback -> Researcher rerun -> HyDE
@@ -13,13 +12,12 @@ reinvokes every time. With max 3 rollbacks x 2 sub-agents, that's up to 6
 wasted HyDE calls. Here: 1 call, cached in state, reused for every
 downstream retrieval regardless of how many rollbacks follow.
 
-Budget accounting (Section 2.2): the LLM call happens before either
-quality gate runs, so it counts against total_llm_calls whenever
-hyde_enabled=True — even if the result is then discarded by a gate and
-the fallback (raw query) is used instead. The caller (main.py, Week 5)
-should seed new_job_state()'s total_llm_calls with 1 whenever
-hyde_enabled=True, since this function's own call happens outside the
-graph and can't update AcademicResearchState itself.
+Budget accounting: the LLM call happens before either quality gate
+runs, so it counts against total_llm_calls whenever hyde_enabled=True —
+even if the result is then discarded by a gate and the fallback (raw
+query) is used instead. The caller must account for that call itself,
+since this function runs outside the graph and can't update
+AcademicResearchState.
 """
 import numpy as np
 from langchain_openai import ChatOpenAI
@@ -31,20 +29,19 @@ from sentence_transformers import SentenceTransformer
 # else that compares embeddings in this project.
 EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
 
-# Section 2.2's $0.001/call cost estimate is GPT-4o-mini.
 LLM_MODEL = "gpt-4o-mini"
 
 MIN_HYP_DOC_WORDS = 50
-# Section 4.3's literal threshold. Measured empirically with
+# Measured empirically with
 # BAAI/bge-small-en-v1.5: real 50+-word "unrelated" text against a typical
 # query (recipe text, sports commentary, gibberish, random word salad,
 # even French prose or digit strings) scored 0.35-0.49 cosine similarity —
 # all *above* this gate. That's this embedding model's anisotropic
 # baseline similarity floor, not a bug — it means gate 2 rarely fires in
-# practice with this model. Kept at the spec'd value rather than lowered
-# to "make it trigger more," since inventing a stricter threshold to hit
-# a target trigger rate isn't a decision this project gets to make
-# unilaterally. See tests/test_preflight.py for how gate 2's *logic* is
+# practice with this model. Kept at the designed value rather than
+# lowered to "make it trigger more" — inventing a stricter threshold
+# just to hit a target trigger rate would be tuning the gate to the
+# demo. See tests/test_preflight.py for how gate 2's *logic* is
 # tested deterministically (mocked encoder) despite this.
 MIN_QUALITY_COSINE_SIM = 0.3
 

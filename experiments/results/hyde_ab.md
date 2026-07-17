@@ -1,4 +1,4 @@
-## HyDE A/B — Section 5.2
+## HyDE A/B
 
 | # | Query | Rollbacks (off) | Rollbacks (on) | SF (off) | SF (on) | Rerank (off) | Rerank (on) |
 |---|---|---|---|---|---|---|---|

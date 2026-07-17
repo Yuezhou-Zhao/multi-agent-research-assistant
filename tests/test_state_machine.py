@@ -1,5 +1,5 @@
-"""Unit tests for the circuit-breaker and budget routing logic (Section 4.6)
-and the Supervisor Send-fan-out routing (Section 4.1).
+"""Unit tests for the circuit-breaker and budget routing logic
+and the Supervisor Send-fan-out routing.
 
 These are pure function tests: no LLM calls, no graph execution — just the
 routing decisions that keep the system from looping forever or overspending
@@ -22,7 +22,7 @@ def base_state(**overrides):
     return state
 
 
-# ── route_after_critic (outer circuit breaker, Section 4.6) ────────────────
+# ── route_after_critic (outer circuit breaker) ──────────────────────────────
 
 class TestRouteAfterCritic:
     def test_approved_routes_to_finalize(self):
@@ -68,7 +68,7 @@ class TestRouteAfterCritic:
         assert route_after_critic(state) == "finalize"
 
 
-# ── route_after_context_eval (inner active-retrieval loop, Section 4.6) ────
+# ── route_after_context_eval (inner active-retrieval loop) ──────────────────
 
 class TestRouteAfterContextEval:
     def test_low_coverage_triggers_refine(self):
@@ -94,7 +94,7 @@ class TestRouteAfterContextEval:
         assert route_after_context_eval(state) == "writer"
 
 
-# ── route_after_supervisor (Send fan-out, Section 4.1) ──────────────────────
+# ── route_after_supervisor (Send fan-out) ───────────────────────────────────
 
 class TestRouteAfterSupervisor:
     def _sends_by_node(self, sends):
@@ -113,7 +113,7 @@ class TestRouteAfterSupervisor:
 
     def test_both_dispatched_in_parallel(self):
         """Both sub-agents fire independently — this is what makes the
-        Researcher tier true Multi-Agent (Section 1.2), not sequential nodes."""
+        Researcher tier genuinely multi-agent, not sequential nodes."""
         state = base_state(supervisor_decision={"use_arxiv": True, "use_web": True})
         sends = route_after_supervisor(state)
         assert self._sends_by_node(sends) == {"arxiv_agent", "web_agent"}
@@ -133,7 +133,7 @@ class TestRouteAfterSupervisor:
         assert self._sends_by_node(sends) == {"arxiv_agent"}
 
 
-# ── Topology sanity (Week 1 goal: "state machine topology correct") ────────
+# ── Topology sanity ─────────────────────────────────────────────────────────
 
 class TestGraphTopology:
     def test_graph_compiles(self):
@@ -147,7 +147,7 @@ class TestGraphTopology:
         assert expected.issubset(node_names)
 
     def test_worst_case_budget_cap_below_theoretical_max(self):
-        """Section 2.2: worst-case theoretical max is 16 LLM calls; the
+        """Worst-case theoretical max is 16 LLM calls; the
         global cap is set to 15 so force_finalize fires one step early."""
         state = base_state(max_llm_calls=15)
         assert state["max_llm_calls"] < 16

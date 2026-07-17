@@ -1,4 +1,4 @@
-## Cascade Effectiveness — Section 5.3 (n=10)
+## Cascade Effectiveness (n=10)
 
 Total sentences scored: **60**
 
@@ -8,7 +8,7 @@ Total sentences scored: **60**
 | escalate (uncertain, needs LLM judge) | 25 | 41.7% |
 | reject (SF < 0.05) — Gamma alone | 17 | 28.3% |
 
-**Gamma-only resolve rate:** 58.3% (Section 5.3 target: ≥ 60%)
+**Gamma-only resolve rate:** 58.3% (design target: ≥ 60%)
 
 **LLM Critic invocation rate (escalate band):** 41.7%
 

@@ -1,9 +1,9 @@
-"""Rule-based citation grounding — Critic layer 2 (Section 4.7 diagram).
+"""Rule-based structural citation check — Critic layer L2a.
 
 Zero LLM calls, purely structural checks:
   1. Every `[N]` marker in the draft must be an integer 1..len(chunks).
      This is the ALWAYS-FAIL rule for out-of-range markers — but with the
-     index-based citation architecture (Section 4.8), out-of-range is
+     index-based citation architecture, out-of-range is
      the only failure mode possible; the LLM cannot fabricate an
      "identifier that doesn't exist" because the whitelist is just the
      integers 1..N. The dangling-citation report exists to catch:
@@ -19,7 +19,7 @@ Zero LLM calls, purely structural checks:
 
 MAX_UNCITED_SENTENCES = 1 is a per-draft tolerance, not a percentage.
 
-Design goal (Section 4.7): a cheap prefilter that catches obvious
+Design goal: a cheap prefilter that catches obvious
 grounding failures before the L3 LLM judge fires. False positives route
 to L3 anyway; false negatives (Critic OKs an ungrounded draft) are the
 failure mode we minimize.
@@ -68,7 +68,7 @@ def _strip_marker(draft: str, marker_content: str) -> str:
 def check_citations(draft: str, merged_chunks: list[dict]) -> CitationReport:
     """Check draft [N] citations against the numbered chunk list.
 
-    Behavior (Section 4.8):
+    Behavior:
       1. Any `[N]` where N is a positive integer in [1, len(chunks)] is
          valid. Anything else in a bracket (non-integer, out-of-range,
          "1, 2" format) is flagged as dangling and stripped from the
@@ -125,7 +125,7 @@ def resolve_citations(draft: str, merged_chunks: list[dict]) -> tuple[str, list[
     """Rewrite `[N]` markers into `[source_id]` markers, using the same
     1..N mapping the Writer saw. Returns (resolved_draft, ordered_ids).
 
-    Called from finalizer_node (Section 4.6): the user-visible
+    Called from finalizer_node: the user-visible
     final_answer displays real arXiv ids, not the internal indices.
     """
     n_chunks = len(merged_chunks)

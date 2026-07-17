@@ -1,4 +1,4 @@
-"""Measure the REAL L3 judge on the escalate band (Section 5.3 / 4.9).
+"""Measure the REAL L3 judge on the escalate band.
 
 compute_f1.py's "Final F1" gives the escalate band an ORACLE L3 — it assumes
 the LLM judge lands on the true label. This script replaces that assumption
@@ -124,7 +124,7 @@ async def main() -> int:
 
     # ── Report ────────────────────────────────────────────────────────
     lines = [
-        "## Cascade F1 — measured L3 judge (Section 5.3 / 4.9)",
+        "## Cascade F1 — measured L3 judge",
         "",
         f"Escalate band: **{len(escalate)}** sentences "
         f"({len(gradable)} gradable correct/hallucinated, "

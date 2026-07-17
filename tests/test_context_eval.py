@@ -1,4 +1,4 @@
-"""Tests for context_eval_node (Section 4.5) — coverage scoring via
+"""Tests for context_eval_node — coverage scoring via
 embedding cosine similarity, zero LLM calls.
 """
 from backend.nodes.context_eval import context_eval_node

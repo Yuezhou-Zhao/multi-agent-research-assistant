@@ -1,12 +1,8 @@
-"""rag/retriever.py — TwoStageRetriever: BM25 + FAISS + RRF fusion + BGE rerank.
+"""rag/retriever.py — TwoStageRetriever: BM25 + FAISS + RRF fusion + cross-encoder rerank.
 
-Section 6 names this architecture ("RAG vs basic vector search": two-stage,
-BM25+FAISS+RRF fusion -> BGE reranker) but the design doc gives no code
-listing for it (unlike chunker/HyDE/gamma, which have full snippets in
-Section 4) — this module is my own implementation of that described
-pipeline, built on top of the Parent-Child index from Week 2
-(rag/indexer.py) and reusing its embedding model for the dense leg so both
-legs score the exact same child chunks.
+Two-stage retrieval over the Parent-Child index (rag/indexer.py),
+reusing the index's embedding model for the dense leg so both legs score
+the exact same child chunks.
 
 Stage 1 (recall):   BM25 (sparse, exact term match) and FAISS (dense,
                      semantic) rank the full child-chunk corpus
@@ -20,17 +16,17 @@ Stage 2 (precision): a cross-encoder re-scores (query, child_text) pairs
                      over the whole corpus — stage 1 exists to narrow the
                      field first.
 
-Reranker model: Section 6 specifies BGE-reranker-v2-m3 by default. Measured
-on this M5 Pro against this corpus's real ~128-token child chunks (not
+Reranker model: BGE-reranker-v2-m3 was the original default. Measured
+on an M5 Pro against this corpus's real ~128-token child chunks (not
 short synthetic strings), reranking 20 candidates took ~500-640ms/query
-end-to-end — at/over Section 8's stopping rule L1 (>500ms/query on M5 Pro
--> switch to cross-encoder/ms-marco-MiniLM-L-6-v2). MPS (Apple Silicon GPU)
-helped (a 20-pair batch alone dropped from ~1.1s to ~77ms) but didn't close
-the gap once real passage lengths and the surrounding retrieve() overhead
-were included, so L1 is genuinely triggered here, not worked around.
-Default is therefore the L1 fallback model; BGE-reranker-v2-m3 remains
-available via the `reranker_model` / `reranker_backend` constructor args
-for anyone running this on hardware where it clears the budget.
+end-to-end — over the 500ms/query latency budget, which triggers the
+documented fallback (cross-encoder/ms-marco-MiniLM-L-6-v2). MPS (Apple
+Silicon GPU) helped (a 20-pair batch alone dropped from ~1.1s to ~77ms)
+but didn't close the gap once real passage lengths and the surrounding
+retrieve() overhead were included. The shipped default is therefore the
+fallback cross-encoder; BGE-reranker-v2-m3 remains available via the
+`reranker_model` / `reranker_backend` constructor args for hardware
+where it clears the budget.
 """
 from pathlib import Path
 
@@ -40,8 +36,8 @@ from sentence_transformers import CrossEncoder, SentenceTransformer
 
 from rag.indexer import INDEX_DIR, load_index
 
-BGE_RERANKER_MODEL = "BAAI/bge-reranker-v2-m3"  # Section 6 default
-FALLBACK_RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"  # Section 8 L1
+BGE_RERANKER_MODEL = "BAAI/bge-reranker-v2-m3"  # original default; over latency budget
+FALLBACK_RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"  # shipped default
 RERANKER_MODEL = FALLBACK_RERANKER_MODEL
 RRF_K = 60  # standard RRF constant (Cormack et al., 2009)
 

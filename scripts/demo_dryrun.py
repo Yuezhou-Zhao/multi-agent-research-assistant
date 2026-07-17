@@ -1,12 +1,12 @@
-"""Demo dry-run — verify the Section 5.4 interview beats headlessly.
+"""Demo dry-run — verify the two scripted demo scenarios headlessly.
 
 Runs the demo's two deliberately-chosen queries through the compiled graph
 (the exact code the Chainlit UI drives) and checks each against its intended
 beat: a query in the corpus's sweet spot that should converge (approved), and
 a genuinely hard query that should degrade gracefully (force_finalize via the
 circuit breaker). The system is non-deterministic (Writer temperature 0.8 on
-rollback), so these are the beats chosen to be *reliable* — run this before an
-interview to confirm they still hold.
+rollback), so these are the beats chosen to be *reliable* — run this before a
+live demo to confirm they still hold.
 
 Makes real LLM calls (two full pipeline runs). Run:
   python -m scripts.demo_dryrun
@@ -71,7 +71,7 @@ async def _run(query: str, hyde_enabled: bool, sf_threshold: float) -> dict:
 
 
 async def main() -> int:
-    print("Demo dry-run — Section 5.4 beats\n")
+    print("Demo dry-run — scripted demo beats\n")
     surprises = []
     for label, query, hyde, sf, expected in SCENARIOS:
         print(f"running [{label}]\n  {query!r} ...", flush=True)
@@ -93,7 +93,7 @@ async def main() -> int:
         for s in surprises:
             print(f"  - {s}")
         return 1
-    print("DRY-RUN OK — both Section 5.4 beats behaved as scripted.")
+    print("DRY-RUN OK — both demo beats behaved as scripted.")
     return 0
 
 

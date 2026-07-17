@@ -1,11 +1,10 @@
-"""Tests for SupervisorAgent classification and its node wrappers
-(Section 4.1).
+"""Tests for SupervisorAgent classification and its node wrappers.
 
 route_after_supervisor's Send-fan-out routing already has dedicated tests
-in tests/test_state_machine.py — it's Week 1 code (lives in graph.py).
-This file covers what's new in Week 4: SupervisorAgent.classify()'s real
-LLM classification (live gpt-4o-mini calls, representative query types),
-and the supervisor_node / merge_results_node wrappers around it.
+in tests/test_state_machine.py (it lives in graph.py). This file covers
+SupervisorAgent.classify()'s real LLM classification (live gpt-4o-mini
+calls, representative query types), and the supervisor_node /
+merge_results_node wrappers around it.
 """
 import os
 
@@ -27,7 +26,7 @@ def base_state(**overrides):
 )
 class TestSupervisorAgentClassification:
     """Real gpt-4o-mini calls — classification correctness on
-    representative query types (Section 4.1's decision logic)."""
+    representative query types."""
 
     @staticmethod
     @pytest.fixture(scope="class")

@@ -1,4 +1,4 @@
-"""Tests for HyDEOperator (Section 4.3): the length and cosine-similarity
+"""Tests for HyDEOperator: the length and cosine-similarity
 quality gates, plus one real (live LLM) integration check.
 
 Gate tests use a fake LLM client so the boundary conditions (word count,

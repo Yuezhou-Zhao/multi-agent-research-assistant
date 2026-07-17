@@ -1,4 +1,4 @@
-## Cascade F1 — Section 5.3 (positive class = hallucinated)
+## Cascade F1 (positive class = hallucinated)
 
 - Labeled batch: **65** sentences; band distribution approve **28** / reject **21** / escalate **16** → Gamma-only resolve rate **49/65 = 75.4%** (the README's labeled-batch figure; the post-fix self-consistency batch resolves 58.3% — see `cascade.md`)
 - Binary-F1 rows: **56** (37 hallucinated, 19 correct; `uncertain` dropped)

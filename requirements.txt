@@ -21,7 +21,7 @@ transformers==4.46.3
 arxiv>=2.1.0
 tavily-python>=0.3.0
 
-# Gamma guardrail (local import from prototype-uncertainty project)
+# Gamma guardrail (survival-function fit)
 scipy>=1.10.0
 numpy>=1.24.0
 
@@ -30,6 +30,6 @@ pydantic>=2.0.0
 python-dotenv>=1.0.0
 aiohttp>=3.9.0
 
-# Testing (Week 1)
+# Testing
 pytest>=8.0.0
 pytest-asyncio>=0.23.0

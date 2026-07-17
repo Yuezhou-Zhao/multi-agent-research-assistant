@@ -1,11 +1,11 @@
-"""Per-sentence citation grounding via embedding similarity (Section 4.9).
+"""Per-sentence citation grounding via embedding similarity — Critic L2b.
 
 Zero-LLM check that catches *citation misattribution*: sentences whose
 `[N]` citation is structurally valid (in-range, resolvable to a real
 paper) but semantically wrong (the cited chunk's actual text doesn't
 support the sentence's specific claim).
 
-Motivation. Section 4.8's index-based citation fix eliminated fabricated
+Motivation. The index-based citation fix eliminated fabricated
 ARXIV IDs — no more `[2305.17306v1]` that doesn't exist. But it did NOT
 catch the case where the LLM describes a well-known method from
 pretrained knowledge and then attaches whichever nearby chunk index has
@@ -13,8 +13,8 @@ a plausible-looking title. Empirically (n=10 labeling exercise): 36/65
 sentences carried a valid-range citation pointing at the wrong paper
 (e.g. FG-PRM described from memory, cited to a REFIND chunk).
 
-Signal. Same idea as backend/nodes/context_eval.py's coverage check
-(Section 4.5), just applied at the sentence-citation pair rather than
+Signal. Same idea as backend/nodes/context_eval.py's coverage check,
+just applied at the sentence-citation pair rather than
 query-subquestion pair:
   sim(sentence_embedding, mean(cited_chunks_embeddings))
 Sentences whose similarity falls below GROUNDING_THRESHOLD are
@@ -74,7 +74,7 @@ _CITATION_RE = re.compile(r"\[(\d+)\]")
 # correct citations. L2b downgrades approve -> escalate (the L3 judge
 # re-checks), so its false positives cost an extra L3 call, not a wrong
 # answer. The residual hallucinated/correct sim overlap is the documented
-# Semantic-Illusion limitation (Section 8) — an embedding-only signal can't
+# Semantic-Illusion limitation — an embedding-only signal can't
 # separate them cleanly; the L3 judge is what closes the gap.
 GROUNDING_THRESHOLD = 0.70
 

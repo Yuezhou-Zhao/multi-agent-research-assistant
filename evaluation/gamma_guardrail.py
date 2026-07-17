@@ -1,31 +1,24 @@
-"""GammaGuardrail — calibrated embedding-distance prefilter (Section 4.7).
+"""GammaGuardrail — calibrated embedding-distance prefilter.
 
-FRAMING — read before writing anything about this elsewhere in the repo
-or out loud in an interview: this is a calibrated embedding-distance
-prefilter, a cheap (zero-LLM, low-latency) way to decide "does this text
-look like the trustworthy academic text we calibrated on, in embedding
-space." It is NOT a statistical guarantee of factual correctness, and it
-is not tied to any specific arXiv preprint's claim. Section 1.3 #4 is
-explicit that it "performs on par with simpler baselines (raw cosine
-distance / empirical percentile)" — the Gamma modeling is an engineering
-choice for a smooth, thresholdable score, not a novel statistical result.
-Known limitation (Section 8): the "Semantic Illusion" problem — a
-hallucination that is semantically close to a correct answer will not
-read as distant in embedding space, so this prefilter will not catch it.
-It exists to cut LLM Critic calls on the easy cases, not to catch every
-hallucination.
-
-requirements.txt originally scoped this as "local import from
-prototype-uncertainty project" — that project isn't part of this repo, so
-this module reimplements the same core technique directly with
-scipy.stats.gamma (already a Section 7.3 dependency for exactly this).
+FRAMING: this is a calibrated embedding-distance prefilter — a cheap
+(zero-LLM, low-latency) way to decide "does this text look like the
+trustworthy academic text we calibrated on, in embedding space." It is
+NOT a statistical guarantee of factual correctness, and it is not tied
+to any specific arXiv preprint's claim. It performs on par with simpler
+baselines (raw cosine distance / empirical percentile) — the Gamma
+modeling is an engineering choice for a smooth, thresholdable score, not
+a novel statistical result. Known limitation: the "Semantic Illusion"
+problem — a hallucination that is semantically close to a correct answer
+will not read as distant in embedding space, so this prefilter will not
+catch it. It exists to cut LLM Critic calls on the easy cases, not to
+catch every hallucination.
 
 How it works:
   1. calibrate(reference_texts) embeds a reference corpus of trustworthy
      academic text, takes its centroid, and fits a Gamma distribution to
      the reference population's own cosine-distance-to-centroid values.
      ("What does trustworthy academic text look like in embedding
-     space" — Section 4.7.) Section 4.7 calibrates on arXiv high-citation
+     space".) The original plan called for arXiv high-citation
      abstracts; arXiv's API doesn't expose citation counts, so this
      project calibrates on real arXiv abstracts from the indexed corpus
      as a proxy — documented here rather than silently substituted.
@@ -41,26 +34,22 @@ How it works:
      produces scores a low SF (atypical -> flagged).
   3. Two call sites, two different uses of that score:
        filter_chunks(chunks, sf_threshold) — single-cutoff keep/reject
-         gate over retrieved evidence (Section 4.2, ArXiv/Web sub-agents).
-         This is where the per-job sf_threshold slider (Section 3.1)
-         actually changes behavior.
+         gate over retrieved evidence (ArXiv/Web sub-agents). This is
+         where the per-job sf_threshold slider actually changes behavior.
        score_and_route(draft, sf_threshold) — three-way cascade
-         (reject/approve/escalate) over Writer's draft sentences
-         (Section 4.7's Critic). The cascade boundaries are the fixed
-         CERTAIN_WRONG/CERTAIN_RIGHT constants below, exactly as the
-         Section 4.7 code lists them; sf_threshold is accepted here for
-         signature parity with filter_chunks (both are snapshotted
-         together in Section 3.1) but does not move these boundaries —
-         matching the literal Section 4.7 code, which never references
-         its own sf_threshold parameter in the cascade body.
+         (reject/approve/escalate) over Writer's draft sentences (the
+         Critic's L1). The cascade boundaries are the fixed
+         CERTAIN_WRONG/CERTAIN_RIGHT constants below; sf_threshold is
+         accepted here for signature parity with filter_chunks (both are
+         snapshotted together per job) but does not move these
+         boundaries.
 
-Measured latency (this M5 Pro, calibrated on 438 real arXiv abstracts):
-Section 4.7 claims "<2ms p99 CPU inference." The Gamma survival-function
-math itself measures ~0.006ms/sentence given an already-computed
-embedding — comfortably under that claim. Full survival_score() latency
-(embed + score) measures ~2.7ms/sentence, dominated by the BGE-small
-forward pass. Both numbers are reported (see this module's __main__
-block) rather than only citing whichever one clears the bar.
+Measured latency (M5 Pro, calibrated on 438 real arXiv abstracts): the
+Gamma survival-function math itself measures ~0.006ms/sentence given an
+already-computed embedding. Full survival_score() latency (embed +
+score) measures ~2.7ms/sentence, dominated by the BGE-small forward
+pass. Both numbers are reported (see this module's __main__ block)
+rather than only the flattering one.
 """
 import re
 
@@ -127,7 +116,7 @@ class GammaGuardrail:
         return stats.gamma.sf(distances, shape, loc=loc, scale=scale)
 
     def filter_chunks(self, chunks: list[dict], sf_threshold: float) -> tuple[list[dict], list[float]]:
-        """Section 4.2: keep only chunks whose SF clears sf_threshold."""
+        """Keep only chunks whose SF clears sf_threshold."""
         if not chunks:
             return [], []
         scores = self.survival_score([c["content"] for c in chunks])
@@ -136,7 +125,7 @@ class GammaGuardrail:
         return verified, verified_scores
 
     def score_and_route(self, draft: str, sf_threshold: float) -> tuple[list[str], float]:
-        """Section 4.7: three-way cascade over Writer's draft sentences.
+        """Three-way cascade over Writer's draft sentences.
 
         Returns (per-sentence routing decisions, mean_sf_score).
         routing: "reject" | "approve" | "escalate"
@@ -245,10 +234,9 @@ if __name__ == "__main__":
     full_ms = (time.time() - t0) / 50 * 1000 / len(test_sentences)
     print(f"scores: {scores}  (on-topic vs. nonsense — separation is the point)")
 
-    # Section 4.7 claims "<2ms p99 CPU inference" — measured full latency
-    # (embed + score) is a few ms, dominated by the embedding forward pass;
-    # the Gamma math itself, given an already-computed embedding, is the
-    # part that's actually sub-2ms. Report both rather than assert one.
+    # Measured full latency (embed + score) is a few ms, dominated by
+    # the embedding forward pass; the Gamma math itself, given an
+    # already-computed embedding, is sub-2ms. Report both.
     embeddings = guardrail.encoder.encode(test_sentences, normalize_embeddings=True)
     distances = guardrail._distance_to_centroid(embeddings)
     shape, loc, scale = guardrail._gamma_params

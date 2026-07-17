@@ -1,4 +1,4 @@
-"""compute_f1.py — Section 5.3's "Final F1 vs Gamma-only F1" sub-metric.
+"""compute_f1.py — the "Final F1 vs Gamma-only F1" sub-metric.
 
 Reads experiments/results/cascade_labels.csv, which cascade_effectiveness.py
 produced with a blank `label` column. Once you fill each row's label as
@@ -121,7 +121,7 @@ def compute():
 
     out = RESULTS_DIR / "cascade_f1.md"
     out.write_text(
-        "## Cascade F1 — Section 5.3 (positive class = hallucinated)\n\n"
+        "## Cascade F1 (positive class = hallucinated)\n\n"
         f"- Labeled batch: **{n_all}** sentences; band distribution "
         f"approve **{band['approve']}** / reject **{band['reject']}** / "
         f"escalate **{band['escalate']}** → Gamma-only resolve rate "

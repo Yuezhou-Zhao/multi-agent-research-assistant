@@ -1,15 +1,14 @@
-"""rag/indexer.py — arXiv paper download + FAISS index build (Week 2).
+"""rag/indexer.py — arXiv paper download + FAISS index build.
 
-Builds the local corpus the ArXiv sub-agent retrieves from (Section 4.2,
-faiss_retriever_tool). Indexes title+abstract metadata, not full PDF text:
-full text is fetched on demand via pdf_parser_tool when an agent actually
-needs it (Week 5), which keeps index construction fast and network-light.
+Builds the local corpus the ArXiv sub-agent retrieves from
+(faiss_retriever_tool). Indexes title+abstract metadata, not full PDF
+text: full text is fetched on demand via pdf_parser_tool when an agent
+actually needs it, which keeps index construction fast and network-light.
 
-Embedding model: BAAI/bge-small-en-v1.5 — chosen for family-consistency
-with the Week 3 BGE reranker, and intended to be the same encoder reused
-wherever else this project computes cosine similarity (HyDE quality gate
-in Section 4.3, context_eval coverage scoring in Section 4.5), so all of
-those comparisons live in the same embedding space.
+Embedding model: BAAI/bge-small-en-v1.5 — the same encoder reused
+wherever else this project computes cosine similarity (HyDE quality
+gate, context_eval coverage scoring), so all of those comparisons live
+in the same embedding space.
 """
 import asyncio
 import json
@@ -26,7 +25,7 @@ from rag.tools import arxiv_search_tool
 INDEX_DIR = Path(__file__).resolve().parent.parent / "index"
 EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
 
-# Spans the CS sub-areas the demo queries (Section 5.4) touch: RAG, agents,
+# Spans the CS sub-areas the demo queries touch: RAG, agents,
 # hallucination detection. Broad enough to hit ~500 unique papers.
 DEFAULT_QUERIES = [
     "retrieval augmented generation",
@@ -102,7 +101,7 @@ def load_index(index_dir: Path = INDEX_DIR):
 def search(query: str, k: int = 5, index_dir: Path = INDEX_DIR) -> list[dict]:
     """Retrieve top-k child chunks for `query`, resolved to parent text.
 
-    This is the retrieval half of the Parent-Child design (Section 4.4):
+    This is the retrieval half of the Parent-Child design:
     match on the precise child embedding, return the full-context parent.
     """
     index, metadata = load_index(index_dir)

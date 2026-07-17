@@ -1,4 +1,4 @@
-## Cascade F1 — measured L3 judge (Section 5.3 / 4.9)
+## Cascade F1 — measured L3 judge
 
 Escalate band: **16** sentences (12 gradable correct/hallucinated, 4 uncertain dropped).
 

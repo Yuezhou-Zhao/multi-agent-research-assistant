@@ -1,4 +1,4 @@
-"""HyDE A/B experiment — Section 5.2, 10 test queries × {off, on}.
+"""HyDE A/B experiment — 10 test queries × {off, on}.
 
 For each (query, hyde_enabled) run, records:
   - Critic rollback count (state["critic_loop_count"])
@@ -6,9 +6,9 @@ For each (query, hyde_enabled) run, records:
   - Mean BGE-family reranker score of retrieved chunks
     (rerank_score is stashed on each chunk by arxiv_agent.py)
 
-Emits a Markdown table matching Section 5.2's schema plus a JSON sidecar
-with the raw numbers, saved under experiments/results/. The README
-Week 7 update pulls the Markdown block from here verbatim.
+Emits a Markdown table plus a JSON sidecar with the raw numbers, saved
+under experiments/results/. The README table is regenerated from that
+Markdown block verbatim.
 
 Runs 20 total jobs (~10-15 min end-to-end on M5 Pro depending on
 rollback rate). Same-seed reproducibility: sf_threshold and query set
@@ -172,7 +172,7 @@ async def main():
     md_path = RESULTS_DIR / "hyde_ab.md"
     json_path.write_text(json.dumps(runs, indent=2))
 
-    md = "## HyDE A/B — Section 5.2\n\n" + to_markdown(runs) + summary(runs)
+    md = "## HyDE A/B\n\n" + to_markdown(runs) + summary(runs)
     md_path.write_text(md)
 
     print("\n" + "=" * 60)

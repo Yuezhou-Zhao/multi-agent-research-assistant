@@ -1,8 +1,8 @@
 # FINAL — human-reviewed labels
 
-## Threshold validation (Section 4.9) — FINAL
+## Threshold validation — FINAL
 
-Analysis uses the human-reviewed `label` column from `experiments/results/cascade_labels.csv`. **These are the finalized labels** — the numbers here are the ones that go into Section 4.9's final writeup and the README.
+Analysis uses the human-reviewed `label` column from `experiments/results/cascade_labels.csv`. **These are the finalized labels** — the numbers here are the ones that go into the README.
 
 ### Per-label sim distribution
 

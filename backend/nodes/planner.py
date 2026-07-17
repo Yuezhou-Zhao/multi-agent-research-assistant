@@ -1,11 +1,11 @@
-"""Planner — decompose the query into 3 sub-questions (Section 2.1 diagram).
+"""Planner — decompose the query into 3 sub-questions.
 
 Sub-questions get fanned out to the Supervisor next, and each one is
-individually scored by context_eval_node (Section 4.5) — coverage_score
+individually scored by context_eval_node — coverage_score
 is the *min* across all 3, so the Planner's job is to produce
-non-degenerate, non-overlapping sub-questions. Three is a fixed, spec'd
-count, not a tuning knob: the worst-case LLM budget analysis in Section
-2.2 assumes a single Planner call producing three sub-questions.
+non-degenerate, non-overlapping sub-questions. Three is a fixed count,
+not a tuning knob: the worst-case LLM budget math assumes a single
+Planner call producing three sub-questions.
 """
 import json
 
@@ -13,7 +13,7 @@ from langchain_openai import ChatOpenAI
 
 from backend.state import AcademicResearchState, llm_call_update
 
-LLM_MODEL = "gpt-4o-mini"  # Section 2.2's cost model
+LLM_MODEL = "gpt-4o-mini"
 
 
 class PlannerAgent:

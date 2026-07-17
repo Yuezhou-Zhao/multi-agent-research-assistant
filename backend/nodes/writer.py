@@ -1,27 +1,25 @@
-"""Writer — draft the answer with index-based citations (Section 2.1 diagram).
+"""Writer — draft the answer with index-based citations.
 
-Design decision (see Section 4.8 of the design doc): Writer cites by
+Design decision: Writer cites by
 1-based INDEX into the presented chunk list — [1], [2], [3] — never by
 raw arXiv id. A deterministic post-processing step in finalizer_node
 resolves those indices back to real arXiv ids/URLs for the user-visible
 final_answer. Rationale, in one sentence: confabulating specific
 identifiers under pressure to "know" one is a well-documented LLM
 failure mode, so we remove the failure mode instead of tuning around it.
-Full writeup + measured baseline in Section 4.8.
 
 The LLM's job becomes "which of these N sources supports this sentence?"
 — structurally impossible to cite something that doesn't exist because
 the whitelist is 1..N and check_citations can just do a range check.
 
-Section 4.9 update: 4.8 stopped fabricated IDs but did NOT stop *citation
-misattribution* — a structurally-valid [N] pointing at a paper whose
+Later fix: index-based citation stopped fabricated IDs but did NOT stop
+*citation misattribution* — a structurally-valid [N] pointing at a paper whose
 content doesn't support the specific claim being made. n=10 labeling
 found this in 36/65 sentences. Two-part fix: this file's BASE_PROMPT
 adds an explicit grounding rule ("do NOT describe methods from your
 pretrained knowledge and then cite whichever chunk has a plausible
 title"), and critic.py adds a zero-LLM embedding-similarity check
-between each cited sentence and its cited chunk's text. See Section 4.9
-for the full trail.
+between each cited sentence and its cited chunk's text.
 
 On rollback (Critic set critic_feedback), the previous draft is included
 and a rollback-temperature LLM is used so the retry actually explores a
@@ -31,7 +29,7 @@ from langchain_openai import ChatOpenAI
 
 from backend.state import AcademicResearchState, llm_call_update
 
-LLM_MODEL = "gpt-4o-mini"  # Section 2.2 cost model
+LLM_MODEL = "gpt-4o-mini"
 
 
 class WriterAgent:

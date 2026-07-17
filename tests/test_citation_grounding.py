@@ -1,4 +1,4 @@
-"""Tests for evaluation/citation_grounding.py (Section 4.9).
+"""Tests for evaluation/citation_grounding.py.
 
 The core failure mode being caught here: a sentence with a structurally
 valid [N] citation, but whose content doesn't match the cited chunk's

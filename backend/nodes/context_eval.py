@@ -1,10 +1,10 @@
-"""context_eval_node — coverage check, zero LLM calls (Section 4.5).
+"""context_eval_node — coverage check, zero LLM calls.
 
 Checks whether the retrieved chunks cover every Planner sub-question.
 Uses embedding cosine similarity only — no LLM call, so this can run every
 outer/inner loop iteration for free (an LLM-based coverage check would add
-up to 3 extra calls, one per outer loop; see Section 4.6/6 for the budget
-accounting this is designed to avoid).
+up to 3 extra calls, one per outer loop — exactly the budget growth
+this design avoids).
 
 Coverage logic: for each sub-question, take the max cosine similarity to
 any verified chunk; coverage_score is the min of those per-question maxima
