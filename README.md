@@ -36,7 +36,12 @@ query, ~$0.016 worst case).
 
 ## Demo
 
-![The run animated: status planning → researching → writing → reviewing → approved](docs/img/demo_run.gif)
+![Approved answer: Gamma red-flags on suspect sentences, real resolved citations](docs/img/demo_answer.png)
+
+*A real query end-to-end: the Critic approves after one visible rollback; 🚩
+marks the sentences Gamma's L1 flagged as likely-hallucinated (2 of 6 in this
+run), and the Writer's `[N]` index citations arrive resolved to real arXiv
+IDs by the Finalizer.*
 
 The Chainlit UI visualizes the run as it happens:
 
@@ -49,52 +54,31 @@ The Chainlit UI visualizes the run as it happens:
 - resolved **`[N]` → arXiv ID** citations in the final answer
 
 <details>
-<summary>Screenshots: approved answer + live metrics panel</summary>
-
-![Approved answer with red-flagged sentences and resolved citations](docs/img/demo_answer.png)
+<summary>Live metrics panel + execution trace, and the whole run animated</summary>
 
 ![Live metrics: LLM budget 5/15, coverage 0.854, cascade bands, approved status](docs/img/demo_metrics.png)
+
+![The run animated: status planning → researching → writing → reviewing → approved](docs/img/demo_run.gif)
 
 </details>
 
 ## Headline results
 
-- **≤ 15 LLM calls per query, enforced** — worst-case ~$0.016/query;
-  degraded answers are flagged, never silently truncated
-- **58.3% of sentences verified with zero LLM calls** — the cheap-first
-  cascade settles most verdicts before the judge is ever invoked
-- **Hallucination detection F1: 0.50 → 0.562** vs. the guardrail alone
-  (oracle-judge ceiling: 0.600)
-- **Local router: 0.446 → 0.838 route accuracy** — distilled from
-  gpt-4o-mini into a 1.5B on-device model, within 1.6 pt of the teacher at
-  ~5× lower p95 latency
+| | |
+|---|---|
+| **LLM budget** | ≤ 15 calls/query, enforced — worst-case ~$0.016/query; degraded answers are flagged, never silently truncated |
+| **Zero-LLM resolution** | 58.3% of sentences verified with zero LLM calls — the cheap-first cascade settles most verdicts before the judge is ever invoked |
+| **Hallucination detection** | F1 0.50 → 0.562 vs. the guardrail alone (oracle-judge ceiling: 0.600) |
+| **Router distillation** | 0.446 → 0.838 route accuracy — distilled from gpt-4o-mini into a 1.5B on-device model, within 1.6 pt of the teacher at ~5× lower p95 latency |
 
 Full tables, methodology, and the negative results: **[docs/results.md](docs/results.md)**.
 
 ## Architecture
 
-**Parallel retrieval (multi-agent).** The arXiv and web sub-agents own
-disjoint tool sets, run concurrently via LangGraph's `Send` API, and write
-to non-overlapping state slices; results merge only at a fan-in node.
-(Concurrency is async within one process — the independence is about tools
-and state, not distributed infrastructure.)
-
-**Shared-state synthesis.** Planner, Writer, and Critic share one state on
-purpose: their data dependencies are tight, and separate agents would add
-serialization overhead for no benefit.
-
-**Hybrid retrieval pipeline.** The retriever combines lexical (BM25) and
-semantic (FAISS) search, fuses the two rankings with reciprocal-rank fusion,
-then reranks with a cross-encoder over parent-child chunks (128-token
-children for recall, 512-token parents for context — hand-written, ~50
-lines). BGE-reranker-v2-m3 was the original reranker; it measured over the
-500 ms/query latency budget on real chunks, so the shipped default is
-`ms-marco-MiniLM-L-6-v2` (BGE stays available via a constructor arg).
-
 ![System overview — pipeline, three-layer cascade, and measured results](docs/system_overview.svg)
 
 <details>
-<summary>Text version of the full flow (mermaid)</summary>
+<summary>Text version of the flow (mermaid)</summary>
 
 ```mermaid
 flowchart TD
@@ -131,6 +115,23 @@ flowchart TD
 ```
 
 </details>
+
+- **Parallel retrieval (multi-agent).** The arXiv and web sub-agents own
+  disjoint tool sets, run concurrently via LangGraph's `Send` API, and write
+  to non-overlapping state slices; results merge only at a fan-in node.
+  (Concurrency is async within one process — the independence is about
+  tools and state, not distributed infrastructure.)
+- **Shared-state synthesis.** Planner, Writer, and Critic share one state
+  on purpose: their data dependencies are tight, and separate agents would
+  add serialization overhead for no benefit.
+- **Hybrid retrieval pipeline.** The retriever combines lexical (BM25) and
+  semantic (FAISS) search, fuses the two rankings with reciprocal-rank
+  fusion, then reranks with a cross-encoder over parent-child chunks
+  (128-token children for recall, 512-token parents for context —
+  hand-written, ~50 lines). BGE-reranker-v2-m3 was the original reranker;
+  it measured over the 500 ms/query latency budget on real chunks, so the
+  shipped default is `ms-marco-MiniLM-L-6-v2` (BGE stays available via a
+  constructor arg).
 
 ## The verification cascade
 
