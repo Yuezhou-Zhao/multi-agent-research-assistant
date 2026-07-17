@@ -77,45 +77,6 @@ Full tables, methodology, and the negative results: **[docs/results.md](docs/res
 
 ![System overview — pipeline, three-layer cascade, and measured results](docs/system_overview.svg)
 
-<details>
-<summary>Text version of the flow (mermaid)</summary>
-
-```mermaid
-flowchart TD
-    Q[User query] --> HyDE[HyDE pre-flight<br/>once-only, cached]
-    HyDE --> P[Planner<br/>decompose into sub-questions]
-    P --> S{Supervisor<br/>classify: arxiv / web / both}
-
-    S -->|Send| A[ArXiv sub-agent<br/>arXiv API + FAISS + PDF]
-    S -->|Send| W[Web sub-agent<br/>Tavily + scraper]
-
-    A --> M[Merge results<br/>fan-in]
-    W --> M
-    M --> CE[Context eval<br/>coverage check, 0 LLM]
-
-    CE -->|coverage low, ≤1 refinement| RF[Refined search]
-    RF --> CE
-    CE -->|coverage ok| WR[Writer<br/>index-based citations]
-
-    WR --> C[Critic cascade]
-    subgraph C[Three-layer Critic cascade]
-        L1[L1 · Gamma guardrail<br/>survival-function score, 0 LLM]
-        L2a[L2a · citation structural check<br/>index in range, 0 LLM]
-        L2b[L2b · citation grounding<br/>embedding sim to cited chunk, 0 LLM]
-        L3[L3 · LLM judge<br/>only on the uncertain band]
-        L1 --> L2a --> L2b --> L3
-    end
-
-    C -->|approve| F[Finalizer<br/>resolve indices → real arXiv IDs]
-    C -->|reject, loops left| S
-    C -->|loops or budget exhausted| FF[Force-finalize]
-
-    F --> OUT[Cited answer]
-    FF --> OUT
-```
-
-</details>
-
 - **Parallel retrieval (multi-agent).** The arXiv and web sub-agents own
   disjoint tool sets, run concurrently via LangGraph's `Send` API, and write
   to non-overlapping state slices; results merge only at a fan-in node.
