@@ -245,8 +245,9 @@ The image builds `linux/arm64` natively. For slow networks there are
 BuildKit cache mounts and a PyPI mirror override
 (`--build-arg PIP_INDEX_URL=...`).
 
-For a public deployment, [`deploy/`](deploy/) adds a Caddy reverse proxy
-with automatic TLS and basic-auth in front of both ports.
+For a public deployment, [`docker/docker-compose.prod.yml`](docker/docker-compose.prod.yml)
+adds a Caddy reverse proxy with automatic TLS and basic-auth in front of
+both ports.
 
 ## Testing
 
@@ -281,8 +282,9 @@ frontend/app.py     Chainlit UI
 experiments/        HyDE A/B, cascade effectiveness, threshold validation
   lora_supervisor/  router distillation (data prep, train, eval)
 scripts/            smoke test, demo dry-run harness
-docker/             Dockerfile + entrypoint.sh (the base image, used locally and in prod)
-deploy/             Caddy + production compose overlay (adds TLS/basic-auth on top)
+docker/             Dockerfile + entrypoint.sh (base image), plus a Caddy +
+                    prod-compose overlay (docker-compose.prod.yml) for a
+                    public deploy with TLS/basic-auth
 tests/              104 unit + integration tests
 docs/results.md     full evaluation write-up
 ```

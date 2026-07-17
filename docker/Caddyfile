@@ -9,7 +9,7 @@
 {$DEMO_DOMAIN} {
 	basic_auth {
 		# username: demo — replace the hash with your own:
-		#   docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml \
+		#   docker compose -f docker-compose.yml -f docker/docker-compose.prod.yml \
 		#     run --rm --entrypoint caddy caddy hash-password
 		demo {$DEMO_PASSWORD_HASH}
 	}
