@@ -2,21 +2,51 @@
 
 ![tests](https://github.com/Yuezhou-Zhao/multi-agent-research-assistant/actions/workflows/ci.yml/badge.svg)
 
-A self-correcting multi-agent research system: parallel arXiv + web
-retrieval, a cited synthesis draft, and a three-layer verification cascade
-that keeps LLM cost bounded by construction (hard cap: 15 calls, ~$0.016
-per query worst case).
+An AI research assistant that answers a technical question by searching
+arXiv and the web in parallel, writing a cited answer, and **fact-checking
+its own draft** before showing it to you — while holding total LLM API cost
+to a hard ceiling.
 
-Built end-to-end with `gpt-4o-mini` as the only API LLM — no managed vector
-DB, no framework black boxes.
+Built with `gpt-4o-mini` as the only API model — no managed vector DB, no
+orchestration black boxes.
 
 > **Author:** Yuezhou Zhao
 
+## Why this project
+
+Most RAG systems either pay an LLM to verify every answer (expensive) or
+return answers with no factual check at all. This project explores **how far
+a cheap-first verification cascade can get** — catching most errors with
+zero-LLM checks and escalating only the genuinely uncertain sentences to an
+LLM judge — **while enforcing a hard upper bound on cost** (≤ 15 calls per
+query, ~$0.016 worst case).
+
+## What happens to one query
+
+```
+"How does chain-of-thought prompting work?"
+       │
+       ▼   Planner    — split into focused sub-questions
+       ▼   Retrieval  — arXiv + Web searched in parallel
+       ▼   Writer     — draft an answer with [1][2] citations
+       ▼   Critic     — verify each sentence; may reject and retry
+       ▼
+  Cited answer  (low-confidence sentences flagged 🚩)
+```
+
+## Demo
+
 ![The run animated: status planning → researching → writing → reviewing → approved](docs/img/demo_run.gif)
 
-*A real query end-to-end: the Critic rejects once, the loop restarts from
-retrieval, and the revised draft is approved — 🚩 marks sentences the
-guardrail flagged, and the `[N]` citations arrive resolved to real arXiv IDs.*
+The Chainlit UI visualizes the run as it happens:
+
+- a **nested execution trace** — every node expandable, including each
+  rollback iteration when the Critic sends the draft back
+- a **live metrics panel** — budget used vs. cap, LLM calls saved by the
+  cascade, coverage score, and the per-band cascade counts
+- **🚩 inline highlighting** of the sentences the guardrail flagged as
+  low-confidence
+- resolved **`[N]` → arXiv ID** citations in the final answer
 
 <details>
 <summary>Screenshots: approved answer + live metrics panel</summary>
@@ -29,19 +59,42 @@ guardrail flagged, and the `[N]` citations arrive resolved to real arXiv IDs.*
 
 ## Headline results
 
-| | |
-|---|---|
-| **58.3%** of sentence verdicts resolved with **zero LLM calls** (cheap-first cascade; judge runs on the rest) | **F1 0.50 → 0.562** hallucination detection vs. guardrail alone (oracle-judge ceiling: 0.600) |
-| **Router distilled to a local 1.5B model**: 0.446 → 0.838 route accuracy (−1.6 pt vs. the gpt-4o-mini teacher) at ~3× lower mean / ~5× lower p95 latency | **≤ 15 LLM calls per query, enforced** — worst-case ~$0.016/query; degraded answers are flagged, never silently truncated |
+- **≤ 15 LLM calls per query, enforced** — worst-case ~$0.016/query;
+  degraded answers are flagged, never silently truncated
+- **58.3% of sentences verified with zero LLM calls** — the cheap-first
+  cascade settles most verdicts before the judge is ever invoked
+- **Hallucination detection F1: 0.50 → 0.562** vs. the guardrail alone
+  (oracle-judge ceiling: 0.600)
+- **Local router: 0.446 → 0.838 route accuracy** — distilled from
+  gpt-4o-mini into a 1.5B on-device model, within 1.6 pt of the teacher at
+  ~5× lower p95 latency
 
 Full tables, methodology, and the negative results: **[docs/results.md](docs/results.md)**.
 
 ## Architecture
 
+**Parallel retrieval (multi-agent).** The arXiv and web sub-agents own
+disjoint tool sets, run concurrently via LangGraph's `Send` API, and write
+to non-overlapping state slices; results merge only at a fan-in node.
+(Concurrency is async within one process — the independence is about tools
+and state, not distributed infrastructure.)
+
+**Shared-state synthesis.** Planner, Writer, and Critic share one state on
+purpose: their data dependencies are tight, and separate agents would add
+serialization overhead for no benefit.
+
+**Hybrid retrieval pipeline.** The retriever combines lexical (BM25) and
+semantic (FAISS) search, fuses the two rankings with reciprocal-rank fusion,
+then reranks with a cross-encoder over parent-child chunks (128-token
+children for recall, 512-token parents for context — hand-written, ~50
+lines). BGE-reranker-v2-m3 was the original reranker; it measured over the
+500 ms/query latency budget on real chunks, so the shipped default is
+`ms-marco-MiniLM-L-6-v2` (BGE stays available via a constructor arg).
+
 ![System overview — pipeline, three-layer cascade, and measured results](docs/system_overview.svg)
 
 <details>
-<summary>Text version of the flow (mermaid)</summary>
+<summary>Text version of the full flow (mermaid)</summary>
 
 ```mermaid
 flowchart TD
@@ -79,33 +132,30 @@ flowchart TD
 
 </details>
 
-**Two tiers, stated precisely:**
-
-- **Retrieval tier — multi-agent.** The arXiv and web sub-agents own
-  disjoint tool sets, run concurrently via LangGraph's `Send` API, and
-  write to non-overlapping state slices; results merge only at a fan-in
-  node. (Concurrency is async within one process — the independence is
-  about tools and state, not distributed infrastructure.)
-- **Synthesis tier — multi-role state machine.** Planner, Writer, and
-  Critic share one state on purpose: their data dependencies are tight,
-  and separate agents would add serialization overhead for no benefit.
-
-**Retrieval** is two-stage: BM25 + FAISS ranked independently, fused with
-reciprocal-rank fusion, then re-scored by a cross-encoder reranker over
-parent-child chunks (128-token children for recall, 512-token parents for
-context — hand-written, ~50 lines). BGE-reranker-v2-m3 was the original
-reranker; it measured over the 500 ms/query latency budget on real chunks,
-so the shipped default is `ms-marco-MiniLM-L-6-v2` (BGE stays available
-via a constructor arg).
-
 ## The verification cascade
 
-Every draft sentence is scored cheapest-first; only genuinely uncertain
-sentences reach an LLM:
+Every draft sentence is scored cheapest-first. Only genuinely uncertain
+sentences ever reach an LLM:
+
+```
+        each draft sentence
+                │
+                ▼
+   L1  embedding confidence      ~2 ms, 0 LLM   → confident approve / reject
+                │  (uncertain)
+                ▼
+   L2a citation format check                    → reject if [N] out of range
+                │
+                ▼
+   L2b citation grounding        0 LLM           → reject if sentence not
+                │                                   supported by cited chunk
+                ▼  (only the still-uncertain band)
+   L3  LLM judge                 1 API call       → final verdict
+```
 
 1. **L1 — Gamma guardrail** ([`evaluation/gamma_guardrail.py`](evaluation/gamma_guardrail.py)):
-   a calibrated embedding-distance survival-function score, ~2 ms, zero
-   LLM. Resolves the confident approve/reject bands outright.
+   a calibrated embedding-distance score, ~2 ms, zero LLM. Resolves the
+   confident approve/reject bands outright.
 2. **L2a — citation structural check** ([`evaluation/citation_check.py`](evaluation/citation_check.py)):
    the Writer cites by *index* `[1..N]` and the Finalizer resolves indices
    to real arXiv IDs afterward — a fabricated identifier is impossible by
@@ -127,9 +177,10 @@ shipped value is 0.70 — the sweep and the reasoning are in
 
 ## Local-inference extension: distilling the router
 
-The Supervisor's per-query routing call (arXiv / web / both) was distilled
-from gpt-4o-mini into a local **Qwen2.5-1.5B + LoRA**, evaluated on a
-130-row human-corrected held-out set:
+To eliminate one API call on every query, the routing decision
+(arXiv / web / both) was distilled from gpt-4o-mini into a local
+**Qwen2.5-1.5B + LoRA**, evaluated on a 130-row human-corrected held-out
+set:
 
 | Metric | gpt-4o-mini (API) | Qwen2.5-1.5B zero-shot | + LoRA (local) |
 |---|---:|---:|---:|
@@ -141,6 +192,13 @@ The wins are latency and on-device independence — the dollar saving at
 this call volume is negligible, and the student inherits the teacher's
 weakness on the `both` class. Full write-up:
 [`experiments/lora_supervisor/RESULTS.md`](experiments/lora_supervisor/RESULTS.md).
+
+**Note on the serving path:** the shipped app keeps the gpt-4o-mini
+routing call. The student lives in [`experiments/lora_supervisor/`](experiments/lora_supervisor/)
+and was measured on Apple-Silicon MPS (fp16 via `transformers` + PEFT);
+it is deliberately not wired into the Docker serving path, where a 1.5B
+model on shared CPU cores would be slower than the API it replaces. The
+distillation targets on-device deployment, not the cloud demo.
 
 ## Setup & run
 
@@ -191,8 +249,12 @@ with automatic TLS and basic-auth in front of both ports.
 
 ## Testing
 
+**104 automated tests** — 99 run without any API key; 5 live-LLM
+integration tests auto-skip when `OPENAI_API_KEY` is absent, so CI stays
+green.
+
 ```bash
-pytest -q     # 104 tests: 99 run keyless; 5 live-LLM tests auto-skip without a key
+pytest -q
 ```
 
 CI runs the keyless suite on every push
@@ -225,15 +287,37 @@ docs/results.md     full evaluation write-up
 
 ## Known limitations
 
-- **Semantic Illusion.** Embedding-based checks (L1, L2b) can't flag
-  hallucinations that sit close to correct answers in embedding space —
-  including same-subfield citation misattributions. Catching those needs
-  NLI or an LLM judge (planned next step).
+- **Semantic Illusion.** Embedding similarity can't reliably detect
+  semantically plausible hallucinations — e.g. citing the wrong paper from
+  the same subfield, which sits in the same embedding neighborhood as the
+  right one. Addressing this needs NLI or an LLM judge.
 - **HyDE showed no measurable retrieval win** at n=10 (the aggregate
   improvement traces to a single query). It stays on because it's cheap
   and harmless; rerunning at n=50 is the planned check.
-- **Static index** — new papers require a re-index.
-- **Single-user demo** — in-memory job store; concurrent multi-user load
-  is out of scope.
 
-Details and follow-up experiments for each: [docs/results.md](docs/results.md).
+## Next steps
+
+Each open limitation has a concrete follow-up experiment:
+
+- **HyDE at scale.** The n=10 improvement (1.40 → 1.20 rollbacks) traces
+  to a single query, so it may be noise. Rerun
+  [`experiments/hyde_ab.py`](experiments/hyde_ab.py) at n=50 to see if the
+  effect survives a larger sample.
+- **Larger L3 ground truth.** The measured cascade F1 (0.562) rests on
+  only 12 gradable escalate-band sentences. Extend
+  [`experiments/measure_l3.py`](experiments/measure_l3.py) to a larger
+  human-annotated batch so the judge's reliability becomes a stable
+  estimate, not a directional one.
+- **NLI-based grounding.** L2b's embedding similarity can't separate a
+  correctly-cited from a wrongly-cited same-subfield paper (the embedding
+  ceiling). Replace the cosine check with an NLI model — testing whether
+  the cited chunk *entails* the sentence — to attack the same-subfield
+  misattribution the embedding signal misses.
+- **Targeted rollback feedback.** Rollbacks currently hand the Writer the
+  whole draft for a global rewrite. Appending the specific L2b failures
+  instead ("sentence K cited [J] but isn't supported by it — rewrite only
+  that sentence, or drop the citation") would turn retries into local
+  edits — and may make the F1-optimal 0.82 threshold convergent enough to
+  ship, recovering the recall that 0.70 trades away.
+
+Full evaluation write-up: [docs/results.md](docs/results.md).
