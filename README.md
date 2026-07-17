@@ -281,7 +281,8 @@ frontend/app.py     Chainlit UI
 experiments/        HyDE A/B, cascade effectiveness, threshold validation
   lora_supervisor/  router distillation (data prep, train, eval)
 scripts/            smoke test, demo dry-run harness
-deploy/             Caddy + production compose overlay
+docker/             Dockerfile + entrypoint.sh (the base image, used locally and in prod)
+deploy/             Caddy + production compose overlay (adds TLS/basic-auth on top)
 tests/              104 unit + integration tests
 docs/results.md     full evaluation write-up
 ```

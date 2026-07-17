@@ -5,7 +5,9 @@ services:
     # rebuild that re-downloaded every wheel. All deps (torch CPU, faiss,
     # FlagEmbedding) publish arm64 wheels, so native is both faster and
     # avoids the redundant build.
-    build: .
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     image: multi-agent-research-assistant:latest
     container_name: research-agent
     ports:

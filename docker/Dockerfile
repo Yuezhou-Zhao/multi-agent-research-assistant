@@ -73,13 +73,13 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 # Application source. tests/, scratchpad, and the built index are
 # excluded via .dockerignore — index/ is mounted as a volume in
-# docker-compose since it's regenerable (Week 2), not baked in.
+# docker-compose since it's regenerable, not baked in.
 COPY backend/ ./backend/
 COPY rag/ ./rag/
 COPY evaluation/ ./evaluation/
 COPY frontend/ ./frontend/
 COPY scripts/ ./scripts/
-COPY entrypoint.sh ./
+COPY docker/entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
 # Persist the Hugging Face model cache to a mount point so the
