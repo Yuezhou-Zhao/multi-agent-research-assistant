@@ -1,12 +1,12 @@
-"""Chainlit frontend — Week 6, Section 7.2.
+"""Chainlit frontend.
 
-Four pieces the design doc calls out:
+Four pieces:
   1. Nested Steps showing the real execution trace (Planner ->
      Supervisor -> Send fan-out -> sub-agents -> Context Eval -> Writer
      -> Critic), including the rollback path when the outer loop fires
      more than once.
   2. Sidebar controls for sf_threshold + hyde_enabled, snapshotted at
-     job submission per Section 3.1's immutability rule — sliders
+     job submission per the per-job immutability rule — sliders
      moved mid-job cannot affect a running job. This is enforced
      structurally: on_message reads sidebar values ONCE into
      new_job_state(), and the graph then reads from state, never from
@@ -63,7 +63,7 @@ def _get_hyde() -> HyDEOperator:
     return _hyde
 
 
-# ── 2. Sidebar controls (Section 3.1 snapshot rule) ─────────────────────
+# ── 2. Sidebar controls (per-job snapshot rule) ─────────────────────────
 
 DEFAULT_SETTINGS = {"hyde_enabled": True, "sf_threshold": 0.15}
 
@@ -90,11 +90,11 @@ async def start():
     cl.user_session.set("settings", dict(DEFAULT_SETTINGS))
     await cl.Message(
         content=(
-            "**Academic Research Agent — ready.**\n\n"
+            "**Multi-Agent Research Assistant — ready.**\n\n"
             "Ask a research question. HyDE toggle + Gamma SF threshold are in the "
             "sidebar (⚙️).\n\n"
             "Sidebar values are **snapshotted at submit time** — sliders moved while "
-            "a job is running have zero effect on that job (Section 3.1 immutability)."
+            "a job is running have zero effect on that job."
         )
     ).send()
 
@@ -228,7 +228,7 @@ def _step_body(node: str, update: dict, state: dict) -> str:
     return str(update)[:800]
 
 
-# ── 1. Trace + streaming (Section 2.1 topology) ────────────────────────
+# ── 1. Trace + streaming ────────────────────────────────────────────────
 
 NODE_STEP_TITLES = {
     "planner": "Planner — decompose query into 3 sub-questions",
@@ -271,53 +271,62 @@ async def main(message: cl.Message):
         metrics_msg.content = _metrics_markdown(state)
         await metrics_msg.update()
 
-    # HyDE pre-flight runs OUTSIDE the graph (Section 2.1). Trace it as
-    # its own top-level Step so the demo shows the pre-flight/state-
-    # machine split explicitly.
-    async with cl.Step(name="HyDE Pre-flight (outside state machine)", type="tool") as step:
-        step.input = f"hyde_enabled={hyde_enabled}"
-        search_payload, hyde_used = await _get_hyde().execute(
-            state["query"], hyde_enabled
-        )
-        state["search_payload"] = search_payload
-        if hyde_used:
-            new_total = state["total_llm_calls"] + 1
-            state["total_llm_calls"] = new_total
-            state["llm_budget_exceeded"] = new_total >= state["max_llm_calls"]
-        step.output = (
-            f"hyde_used={hyde_used}\n\n"
-            + (
-                f"payload preview: {search_payload[:400]}..."
-                if hyde_used
-                else "using raw query as search_payload"
+    # The whole run — HyDE pre-flight plus the graph stream — is wrapped
+    # so a mid-run failure (API timeout, network drop, malformed reply)
+    # renders as a failed job through the normal footer instead of an
+    # unhandled exception in the UI.
+    try:
+        # HyDE pre-flight runs ONCE, outside the graph. Trace it as its
+        # own top-level Step so the pre-flight/state-machine split is
+        # visible in the demo.
+        async with cl.Step(name="HyDE Pre-flight (outside state machine)", type="tool") as step:
+            step.input = f"hyde_enabled={hyde_enabled}"
+            search_payload, hyde_used = await _get_hyde().execute(
+                state["query"], hyde_enabled
             )
-        )
-    await refresh_metrics()
-
-    # ── Stream through the compiled graph, mounting each node update
-    #    as a Chainlit Step. astream(stream_mode="updates") yields
-    #    {node_name: partial_state} after each node completes — that's
-    #    exactly what we want to render as trace + refresh metrics from.
-    graph = _get_graph()
-    critic_pass = 0
-
-    async for event in graph.astream(state, stream_mode="updates"):
-        for node, update in event.items():
-            state.update(update)
-
-            if node == "critic":
-                critic_pass += 1
-                title = (
-                    f"Critic pass {critic_pass}/{state['max_critic_loops']} "
-                    f"— L1 → L2 → L3"
+            state["search_payload"] = search_payload
+            if hyde_used:
+                new_total = state["total_llm_calls"] + 1
+                state["total_llm_calls"] = new_total
+                state["llm_budget_exceeded"] = new_total >= state["max_llm_calls"]
+            step.output = (
+                f"hyde_used={hyde_used}\n\n"
+                + (
+                    f"payload preview: {search_payload[:400]}..."
+                    if hyde_used
+                    else "using raw query as search_payload"
                 )
-            else:
-                title = NODE_STEP_TITLES.get(node, node)
+            )
+        await refresh_metrics()
 
-            async with cl.Step(name=title, type="tool") as step:
-                step.output = _step_body(node, update, state)
+        # ── Stream through the compiled graph, mounting each node update
+        #    as a Chainlit Step. astream(stream_mode="updates") yields
+        #    {node_name: partial_state} after each node completes — that's
+        #    exactly what we want to render as trace + refresh metrics from.
+        graph = _get_graph()
+        critic_pass = 0
 
-            await refresh_metrics()
+        async for event in graph.astream(state, stream_mode="updates"):
+            for node, update in event.items():
+                state.update(update)
+
+                if node == "critic":
+                    critic_pass += 1
+                    title = (
+                        f"Critic pass {critic_pass}/{state['max_critic_loops']} "
+                        f"— L1 → L2 → L3"
+                    )
+                else:
+                    title = NODE_STEP_TITLES.get(node, node)
+
+                async with cl.Step(name=title, type="tool") as step:
+                    step.output = _step_body(node, update, state)
+
+                await refresh_metrics()
+    except Exception as exc:
+        state["status"] = "failed"
+        state["failure_reason"] = f"{type(exc).__name__}: {exc}"
+        await refresh_metrics()
 
     # ── 3. Final answer with L1-rejected sentences marked ─────────────
     final_answer = state.get("final_answer", "")

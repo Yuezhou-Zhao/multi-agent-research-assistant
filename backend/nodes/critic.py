@@ -1,11 +1,11 @@
-"""Critic — three-layer cascade (Section 4.7 diagram + Section 4.9 update).
+"""Critic — three-layer verification cascade.
 
 L1: Gamma sentence scorer over the draft (zero LLM, ~ms per sentence).
     Rejects on majority-reject. Otherwise produces a per-sentence
     approve/escalate/reject cascade.
-L2a: Rule-based structural citation check (zero LLM). Section 4.8:
-     strips dangling `[N]` markers and enforces MAX_UNCITED_SENTENCES.
-L2b: Per-sentence embedding grounding check (zero LLM, Section 4.9).
+L2a: Rule-based structural citation check (zero LLM): strips dangling
+     `[N]` markers and enforces MAX_UNCITED_SENTENCES.
+L2b: Per-sentence embedding grounding check (zero LLM).
      Sentences whose cosine similarity to their cited chunk's text
      falls below GROUNDING_THRESHOLD are downgraded in the L1 cascade
      (approve -> escalate, escalate -> reject). Then majority-reject
@@ -13,12 +13,12 @@ L2b: Per-sentence embedding grounding check (zero LLM, Section 4.9).
 L3: LLM judge (single gpt-4o-mini call). Only fires if L1, L2a, and
     L2b all left the cascade non-majority-reject.
 
-Section 2.2 accounts for max 3 Critic LLM calls (once per outer loop);
+The budget accounts for max 3 Critic LLM calls (once per outer loop);
 the cascade means the actual number is usually much lower.
-llm_calls_avoided (Section 3.1) increments by 1 whenever any L1/L2a/L2b
-layer short-circuits L3 — the primary metric for the cascade value
-story (Section 5.1 target: >=60% of Critic decisions resolved by
-Gamma+rules alone).
+llm_calls_avoided increments by 1 whenever any L1/L2a/L2b layer
+short-circuits L3 — the primary metric for the cascade value story
+(design target: >=60% of Critic decisions resolved by Gamma+rules
+alone).
 """
 import json
 
@@ -61,15 +61,24 @@ misrepresents a cited source, or omits a critical aspect of the query."""
         self, query: str, draft: str, indexed_cited_chunks: list[tuple[int, dict]]
     ) -> dict:
         """indexed_cited_chunks is (1-based-index, chunk) so the judge sees
-        the same [N] format the draft uses — matches Section 4.8's
-        index-based citation architecture."""
+        the same [N] format the draft uses — matches the index-based
+        citation design."""
         citations = "\n\n".join(
             f"[{i}] {c['content']}" for i, c in indexed_cited_chunks
         )
         response = await self.llm.ainvoke(
             self.JUDGE_PROMPT.format(query=query, draft=draft, citations=citations)
         )
-        return json.loads(response.content)
+        # A malformed judge reply must not kill the job. Treat it as a
+        # rejection — the draft gets another rollback pass or
+        # force-finalizes — never as a silent approve.
+        try:
+            verdict = json.loads(response.content)
+        except (json.JSONDecodeError, TypeError):
+            return {"approved": False, "reason": "judge reply was malformed JSON"}
+        if not isinstance(verdict, dict):
+            return {"approved": False, "reason": "judge reply was not a JSON object"}
+        return verdict
 
 
 _default_agent: CriticAgent | None = None
@@ -112,8 +121,8 @@ async def critic_node(state: AcademicResearchState) -> dict:
     cascade_decisions, mean_sf = guardrail.score_and_route(draft, state["sf_threshold"])
     reject_count = cascade_decisions.count("reject")
     l1_rejected = reject_count > len(cascade_decisions) / 2  # majority-reject
-    # Policy note: Section 4.7's code lists per-sentence decisions but
-    # doesn't specify how to combine them into a draft-level verdict.
+    # Policy note: the cascade produces per-sentence decisions but that
+    # doesn't itself decide how to combine them into a draft-level verdict.
     # Original implementation used "any reject -> rollback"; measured on a
     # 5-query batch that rejected 100% of drafts (30% reject rate per
     # sentence * 5-7 sentences per draft -> always >= 1 reject). Switched
@@ -121,7 +130,7 @@ async def critic_node(state: AcademicResearchState) -> dict:
     # confidently negative overall; minority rejects still escalate the
     # whole draft to L3 (LLM judge), which was the point of L3 existing.
     # llm_calls_avoided still increments when L1 short-circuits — that's
-    # the Section 5.1 metric.
+    # the cascade-value metric.
     if l1_rejected:
         return {
             **base_update,
@@ -151,7 +160,7 @@ async def critic_node(state: AcademicResearchState) -> dict:
 
     sanitized_draft = citation_report.sanitized_draft or draft
 
-    # ── Layer 2b: per-sentence embedding grounding (Section 4.9) ──────
+    # ── Layer 2b: per-sentence embedding grounding ────────────────────
     # Catches citation misattribution: structurally valid [N] pointing
     # at a chunk whose content doesn't support the sentence's claim.
     # Downgrades approve/escalate for ungrounded sentences; if the
@@ -175,7 +184,7 @@ async def critic_node(state: AcademicResearchState) -> dict:
 
     # ── Layer 3: LLM judge (only if L1, L2a, L2b all passed) ──────────
     # Judge sees chunks with the same 1-based [N] labels the Writer used
-    # in the draft (Section 4.8) — otherwise it can't map "[3]" in the
+    # in the draft — otherwise it can't map "[3]" in the
     # draft to any specific evidence.
     indexed_cited_chunks = [
         (i, merged_chunks[i - 1])

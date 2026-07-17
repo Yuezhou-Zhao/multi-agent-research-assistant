@@ -1,0 +1,28 @@
+# Caddy reverse proxy for the public demo.
+#
+# Replace DEMO_DOMAIN with your domain (or a free DuckDNS subdomain).
+# Caddy provisions and renews the TLS certificate automatically.
+#
+# basic_auth protects the OpenAI/Tavily quota behind the demo: generate
+# the bcrypt hash with `caddy hash-password` and paste it below. Share
+# the credentials in interviews / on your resume footnote.
+{$DEMO_DOMAIN} {
+	basic_auth {
+		# username: demo — replace the hash with your own:
+		#   docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml \
+		#     run --rm --entrypoint caddy caddy hash-password
+		demo {$DEMO_PASSWORD_HASH}
+	}
+
+	# Chainlit UI (websockets included — Caddy proxies them transparently)
+	reverse_proxy research-agent:8000
+}
+
+api.{$DEMO_DOMAIN} {
+	basic_auth {
+		demo {$DEMO_PASSWORD_HASH}
+	}
+
+	# FastAPI JSON API (POST /research, GET /status/{id}, GET /result/{id})
+	reverse_proxy research-agent:8001
+}

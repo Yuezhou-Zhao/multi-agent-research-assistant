@@ -1,0 +1,34 @@
+# Production overlay: adds Caddy (TLS + basic_auth) in front of the app.
+#
+# Usage on the server (EC2):
+#   export DEMO_DOMAIN=demo.example.com
+#   export DEMO_PASSWORD_HASH='$2a$14$...'   # from: caddy hash-password
+#   docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml up -d
+#
+# With this overlay the app ports are no longer published on the host —
+# only Caddy (80/443) is reachable; it proxies to the app on the
+# internal Docker network.
+services:
+  research-agent:
+    ports: !reset []
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DEMO_DOMAIN=${DEMO_DOMAIN}
+      - DEMO_PASSWORD_HASH=${DEMO_PASSWORD_HASH}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - research-agent
+
+volumes:
+  caddy_data:
+  caddy_config:

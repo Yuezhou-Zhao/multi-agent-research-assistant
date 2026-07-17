@@ -6,18 +6,19 @@ services:
     # FlagEmbedding) publish arm64 wheels, so native is both faster and
     # avoids the redundant build.
     build: .
-    image: academic-research-agent:latest
+    image: multi-agent-research-assistant:latest
     container_name: research-agent
     ports:
-      - "8000:8000"
-    # API keys come from .env at the repo root. .env is gitignored
-    # (.gitignore line 4) so keys never end up in a public artifact.
+      - "8000:8000"   # Chainlit UI
+      - "8001:8001"   # FastAPI JSON API
+    # API keys come from .env at the repo root. .env is gitignored,
+    # so keys never end up in a public artifact.
     env_file:
       - .env
     volumes:
       # FAISS index + parent-child metadata: regenerable via
       # `python -m rag.indexer`, so we volume-mount rather than bake
-      # into the image (Section 7.2 Week 2). Persists across
+      # into the image. Persists across
       # container recreation; if the volume is empty (fresh checkout,
       # or user ran `docker compose down -v`), entrypoint.sh rebuilds
       # it once at startup.

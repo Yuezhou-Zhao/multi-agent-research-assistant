@@ -17,12 +17,13 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      # torch CPU wheel is enough for the test suite and much smaller than
-      # the default CUDA build.
+      # torch CPU wheel is enough for the test suite and much smaller
+      # than the default CUDA build; the version matches requirements.lock
+      # (and the Dockerfile) so CI tests the same versions that ship.
       - name: Install dependencies
         run: |
-          pip install torch --index-url https://download.pytorch.org/whl/cpu
-          pip install -r requirements.txt
+          pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt -c requirements.lock
 
       # The real-encoder integration test loads BAAI/bge-small-en-v1.5
       # (~130 MB) — cache it across runs.

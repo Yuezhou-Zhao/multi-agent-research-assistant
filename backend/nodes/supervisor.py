@@ -1,9 +1,9 @@
-"""SupervisorAgent — query classification + Send API dispatch (Section 4.1).
+"""SupervisorAgent — query classification + Send API dispatch.
 
 Routes retrieval to the ArXiv sub-agent, the Web sub-agent, or both in
 parallel. This classification step plus route_after_supervisor's Send
-fan-out (backend/graph.py, written in Week 1) is what makes the Researcher
-tier true Multi-Agent (Section 1.2): the Supervisor decides independently,
+fan-out (backend/graph.py) is what makes the Researcher tier genuinely
+multi-agent: the Supervisor decides independently,
 then two sub-agents with disjoint tool sets run concurrently and write to
 non-overlapping state fields (arxiv_chunks vs web_chunks).
 
@@ -17,7 +17,7 @@ from langchain_openai import ChatOpenAI
 
 from backend.state import AcademicResearchState, llm_call_update
 
-LLM_MODEL = "gpt-4o-mini"  # Section 2.2's cost model
+LLM_MODEL = "gpt-4o-mini"
 
 
 class SupervisorAgent:
@@ -36,9 +36,25 @@ use_web: true if query needs recent news, events, or non-academic sources"""
             model_kwargs={"response_format": {"type": "json_object"}},
         )
 
+    FALLBACK_DECISION = {
+        "use_arxiv": True,
+        "use_web": False,
+        "reason": "classifier reply was malformed; defaulting to arxiv-only",
+    }
+
     async def classify(self, query: str) -> dict:
         response = await self.llm.ainvoke(self.CLASSIFICATION_PROMPT.format(query=query))
-        return json.loads(response.content)
+        # A malformed reply must not kill the job: fall back to the same
+        # arxiv-only default route_after_supervisor uses when a decision
+        # names neither source. response_format=json_object makes this
+        # rare, not impossible.
+        try:
+            decision = json.loads(response.content)
+        except (json.JSONDecodeError, TypeError):
+            return dict(self.FALLBACK_DECISION)
+        if not isinstance(decision, dict):
+            return dict(self.FALLBACK_DECISION)
+        return decision
 
 
 _default_agent: SupervisorAgent | None = None

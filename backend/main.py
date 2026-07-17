@@ -1,4 +1,4 @@
-"""FastAPI async job dispatch (Section 2.1 top box).
+"""FastAPI async job dispatch.
 
 Endpoints:
   POST /research      -> submit a query, get back a job_id immediately
@@ -7,15 +7,15 @@ Endpoints:
 
 Job lifecycle:
   1. new_job_state() snapshots hyde_enabled, sf_threshold, and the two
-     budget caps (Section 1.3 #6). These are frozen for this job — mid-
+     budget caps. These are frozen for this job — mid-
      execution slider changes on the UI cannot corrupt a running job.
-  2. HyDEOperator.execute() runs once, outside the graph (Section 2.1's
-     "Pre-flight Layer (OUTSIDE state machine)"). Its call counts against
+  2. HyDEOperator.execute() runs once, outside the graph, as a
+     pre-flight step. Its call counts against
      the LLM budget even though it happens before the graph starts.
   3. The compiled LangGraph runs asynchronously; the request handler
      doesn't wait for it. Results are polled via /status and /result.
 
-Storage: in-memory dict keyed by job_id. Section 8's stated scope is
+Storage: in-memory dict keyed by job_id. The stated scope is
 "single-user demo, concurrent multi-user load not supported" — a real
 service would swap this for Redis/Postgres. Deliberately not doing that
 here because it would be scope creep for a portfolio demo and would
@@ -39,9 +39,13 @@ from backend.state import AcademicResearchState, new_job_state
 
 log = logging.getLogger(__name__)
 
-app = FastAPI(title="Academic Research Agent")
+app = FastAPI(title="Multi-Agent Research Assistant")
 
 _jobs: dict[str, AcademicResearchState] = {}
+# Hard references to in-flight jobs: asyncio.create_task() alone keeps only
+# a weak reference in the event loop, so an otherwise-unreferenced task can
+# be garbage-collected mid-run and silently vanish.
+_background_tasks: set[asyncio.Task] = set()
 _graph = None
 _hyde: HyDEOperator | None = None
 
@@ -99,7 +103,7 @@ class ResultResponse(BaseModel):
 async def _run_job(state: AcademicResearchState) -> None:
     job_id = state["job_id"]
     try:
-        # ── Pre-flight (Section 2.1): HyDE runs once, OUTSIDE the graph.
+        # ── Pre-flight: HyDE runs once, OUTSIDE the graph.
         search_payload, hyde_used = await _get_hyde().execute(
             state["query"], state["hyde_enabled"]
         )
@@ -109,8 +113,14 @@ async def _run_job(state: AcademicResearchState) -> None:
             state["total_llm_calls"] = new_total
             state["llm_budget_exceeded"] = new_total >= state["max_llm_calls"]
 
-        final = await _get_graph().ainvoke(state)
-        _jobs[job_id] = final
+        # Stream node-by-node so GET /status reflects live progress:
+        # ainvoke() merges updates into LangGraph's internal channels and
+        # would leave _jobs[job_id] frozen at "preflight" until the run
+        # finished.
+        async for event in _get_graph().astream(state, stream_mode="updates"):
+            for update in event.values():
+                state.update(update)
+            _jobs[job_id] = state
     except Exception as exc:
         log.exception("Job %s failed", job_id)
         state["status"] = "failed"
@@ -130,7 +140,9 @@ async def submit_research(request: ResearchRequest) -> ResearchResponse:
         max_llm_calls=request.max_llm_calls,
     )
     _jobs[job_id] = state
-    asyncio.create_task(_run_job(state))
+    task = asyncio.create_task(_run_job(state))
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
     return ResearchResponse(job_id=job_id)
 
 

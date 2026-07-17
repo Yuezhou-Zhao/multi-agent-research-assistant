@@ -1,15 +1,14 @@
 #!/bin/bash
-# entrypoint.sh — container startup.
+# Container startup.
 #
 # 1. If the FAISS index isn't already on the mounted volume (fresh
 #    machine or purged volume), build it once before serving. This
-#    downloads ~500 arXiv abstracts and embeds them (~90s on the M5
-#    Pro reference machine). Section 7.2 Week 2's `python -m
-#    rag.indexer` is the same command.
+#    downloads ~500 arXiv abstracts and embeds them (~90s on the
+#    reference machine).
 #
-# 2. Launch Chainlit on 0.0.0.0:8000 (Section 7.2 Week 6). Never bind
-#    to 127.0.0.1 in a container — Docker port-forwarding wouldn't
-#    reach it.
+# 2. Serve the FastAPI JSON API (uvicorn, :8001) alongside the Chainlit
+#    UI (:8000). Both bind 0.0.0.0 — 127.0.0.1 wouldn't be reachable
+#    through Docker port-forwarding.
 set -e
 
 if [ ! -f /app/index/faiss.index ]; then
@@ -17,5 +16,8 @@ if [ ! -f /app/index/faiss.index ]; then
     python -m rag.indexer
 fi
 
-echo "[entrypoint] Launching Chainlit on 0.0.0.0:8000"
+echo "[entrypoint] Starting FastAPI JSON API (uvicorn) on 0.0.0.0:8001"
+uvicorn backend.main:app --host 0.0.0.0 --port 8001 &
+
+echo "[entrypoint] Launching Chainlit UI on 0.0.0.0:8000"
 exec chainlit run frontend/app.py --host 0.0.0.0 --port 8000

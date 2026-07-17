@@ -1,5 +1,5 @@
-# python:3.11-slim to match the venv the project developed against
-# (Section 7.3). -slim keeps image size down without giving up glibc.
+# python:3.11-slim to match the venv the project developed against.
+# -slim keeps image size down without giving up glibc.
 FROM python:3.11-slim
 
 # System deps: FlagEmbedding pulls in FAISS wheels that use libgomp1
@@ -12,9 +12,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# requirements.txt copied separately so `docker build` reuses the pip
-# install layer whenever only source code changes.
-COPY requirements.txt .
+# Requirements copied separately so `docker build` reuses the pip
+# install layer whenever only source code changes. requirements.lock
+# (pip freeze of the reference venv) pins every transitive version via
+# pip's constraints mechanism for reproducible builds.
+COPY requirements.txt requirements.lock ./
 # Two-step install to survive PyPI throttling on the ~400MB torch wheel:
 #   1. torch first, from PyTorch's own CPU-only index — the CPU wheel is
 #      ~200MB (vs the ~426MB CUDA-enabled one on PyPI) AND download.
@@ -67,7 +69,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     --retries=10 \
     --index-url ${PIP_INDEX_URL} \
     --extra-index-url ${PIP_EXTRA_INDEX_URL} \
-    -r requirements.txt
+    -r requirements.txt -c requirements.lock
 
 # Application source. tests/, scratchpad, and the built index are
 # excluded via .dockerignore — index/ is mounted as a volume in
@@ -85,8 +87,9 @@ RUN chmod +x ./entrypoint.sh
 # recreation.
 ENV HF_HOME=/hf_cache
 
-# Chainlit UI port (Section 7.2 Week 6).
-EXPOSE 8000
+# Chainlit UI (8000) + FastAPI JSON API (8001) — both started by
+# entrypoint.sh.
+EXPOSE 8000 8001
 
 # API keys (OPENAI_API_KEY, TAVILY_API_KEY) come from docker-compose's
 # env_file: .env directive at runtime. NEVER bake them into the image.
