@@ -2,24 +2,24 @@
 
 ![tests](https://github.com/Yuezhou-Zhao/multi-agent-research-assistant/actions/workflows/ci.yml/badge.svg)
 
-An AI research assistant that answers a technical question by searching
-arXiv and the web in parallel, writing a cited answer, and **fact-checking
-its own draft** before showing it to you — while holding total LLM API cost
-to a hard ceiling.
+A production-minded research assistant that answers technical questions by
+retrieving across arXiv and the web, drafting a cited synthesis, and
+**self-correcting through a three-layer verification cascade** that keeps
+LLM cost bounded by construction.
 
-Built with `gpt-4o-mini` as the only API model — no managed vector DB, no
-orchestration black boxes.
+Built with `gpt-4o-mini` as the only API-side language model — no managed
+vector database, no opaque orchestration layer.
 
 > **Author:** Yuezhou Zhao
 
 ## Why this project
 
-Most RAG systems either pay an LLM to verify every answer (expensive) or
-return answers with no factual check at all. This project explores **how far
-a cheap-first verification cascade can get** — catching most errors with
-zero-LLM checks and escalating only the genuinely uncertain sentences to an
-LLM judge — **while enforcing a hard upper bound on cost** (≤ 15 calls per
-query, ~$0.016 worst case).
+Most RAG systems either invoke an LLM to verify every generated claim, at
+significant cost, or perform no verification at all. This project
+investigates whether **a cheap-first verification cascade can close that
+gap** — resolving most sentence-level verdicts with zero-LLM checks and
+escalating only genuinely uncertain cases to an LLM judge — **under a hard
+upper bound on cost** (≤ 15 calls per query, ~$0.016 worst case).
 
 ## What happens to one query
 
