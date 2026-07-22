@@ -59,7 +59,7 @@
   <!-- Web agent -->
   <rect x="700" y="152" width="220" height="46" rx="8" fill="#161b22" stroke="#388bfd"/>
   <text x="810" y="171" fill="#58a6ff" font-size="12.5" font-weight="600" text-anchor="middle">Web sub-agent</text>
-  <text x="810" y="187" fill="#8b949e" font-size="10.5" text-anchor="middle">Tavily search + scraper</text>
+  <text x="810" y="187" fill="#8b949e" font-size="10.5" text-anchor="middle">Tavily + scraper · via MCP server</text>
 
   <!-- fan-in -->
   <path d="M 920 104 C 940 104 940 130 958 130" fill="none" stroke="#8b949e" marker-end="url(#arr)"/>
@@ -166,7 +166,7 @@
   <text x="658" y="672" fill="#8b949e" font-size="11">fully on-device, 130-row human-checked eval</text>
 
   <rect x="948" y="596" width="304" height="94" rx="8" fill="#161b22" stroke="#30363d"/>
-  <text x="964" y="622" fill="#e6edf3" font-size="15" font-weight="700">104 tests · Dockerized · traced</text>
+  <text x="964" y="622" fill="#e6edf3" font-size="15" font-weight="700">115 tests · Dockerized · traced</text>
   <text x="964" y="642" fill="#8b949e" font-size="11">circuit-breaker + budget routing under test</text>
   <text x="964" y="657" fill="#8b949e" font-size="11">end-to-end smoke test in the container</text>
   <text x="964" y="672" fill="#8b949e" font-size="11">live execution trace + metrics panel in UI</text>

@@ -35,6 +35,6 @@ jobs:
 
       # No API keys in CI: the 5 live-LLM integration tests skip themselves
       # (see @pytest.mark.skipif in tests/test_preflight.py and
-      # tests/test_supervisor.py); the remaining 99 must pass.
+      # tests/test_supervisor.py); the remaining 110 must pass.
       - name: Run tests
         run: python -m pytest -q

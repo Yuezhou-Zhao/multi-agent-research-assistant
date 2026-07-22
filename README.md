@@ -82,25 +82,13 @@ Full tables, methodology, and the negative results: **[docs/results.md](docs/res
   to non-overlapping state slices; results merge only at a fan-in node.
   (Concurrency is async within one process — the independence is about
   tools and state, not distributed infrastructure.)
-- **Tool execution over MCP.** The web sub-agent's tool set (`tavily_search`,
-  `url_scraper`) is served by a standalone Model Context Protocol server
-  ([`mcp_servers/web_research.py`](mcp_servers/web_research.py), FastMCP) that
-  the graph reaches over stdio. The node discovers its tools from the server's
-  `list_tools` response at connect time instead of importing them, so tool
-  execution is decoupled from orchestration — the sub-agent's tool boundary is
-  now a process boundary rather than a naming convention. Implementations did
-  not move: the server imports `rag/tools.py` unchanged, which keeps those
-  functions unit-testable with no transport in the loop. **Measured cost:
-  +1.5 ms p50 / +1.7 ms p95 per call** (50 calls/path, stubbed tool body to
-  isolate protocol cost from network latency), plus a one-time ~245 ms connect
-  amortized across the process — against a web search that itself takes
-  100-500 ms. Reproduce with
-  [`scripts/bench_mcp_overhead.py`](scripts/bench_mcp_overhead.py).
-  The arXiv sub-agent's FAISS retrieval deliberately stayed in-process: it is
-  the latency-critical path, and a hop there would be paid on every query for
-  no decoupling worth having. Calls fail open — if the server can't be reached
-  the node falls back to the in-process implementation, and only then to the
-  empty-`web_chunks` degraded state it has always produced.
+- **Tool execution over MCP.** The web sub-agent's tools (`tavily_search`,
+  `url_scraper`) run in a standalone FastMCP server
+  ([`mcp_servers/web_research.py`](mcp_servers/web_research.py)) reached over
+  stdio, discovered via `list_tools` at connect time rather than imported.
+  Costs +1.5 ms p50/call ([benchmark](scripts/bench_mcp_overhead.py)) and falls
+  back in-process if unreachable. FAISS retrieval stayed in-process — it is the
+  latency-critical path.
 - **Shared-state synthesis.** Planner, Writer, and Critic share one state
   on purpose: their data dependencies are tight, and separate agents would
   add serialization overhead for no benefit.
