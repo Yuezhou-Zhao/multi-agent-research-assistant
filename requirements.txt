@@ -21,6 +21,14 @@ transformers==4.46.3
 arxiv>=2.1.0
 tavily-python>=0.3.0
 
+# MCP — serves the Web sub-agent's tool set (mcp_servers/web_research.py)
+# and the client the graph calls it through. Chainlit already pulls this in
+# transitively; declared explicitly because the agent now depends on it
+# directly, so a Chainlit bump can't silently drop it. The floor is where
+# structuredContent tool results landed; requirements.lock pins the tested
+# 1.28.1.
+mcp>=1.10.0
+
 # Gamma guardrail (survival-function fit)
 scipy>=1.10.0
 numpy>=1.24.0
