@@ -33,8 +33,40 @@ TERMINAL_STATUSES = {"approved", "force_finalized", "budget_exceeded"}
 QUERY = "How does chain of thought reasoning improve language model performance?"
 
 
+async def _check_mcp_server() -> bool:
+    """Verify the web-research MCP server is reachable and advertises its tools.
+
+    Worth its own check rather than trusting the end-to-end run: web_agent_node
+    fails open to an in-process Tavily call, so a missing or broken server
+    produces a perfectly green pipeline with a component silently bypassed.
+    This is the check that catches, for instance, mcp_servers/ not being COPYed
+    into the image.
+    """
+    from rag.mcp_client import WebResearchMCPClient
+
+    client = WebResearchMCPClient()
+    try:
+        names = await client.tool_names()
+    except Exception as exc:
+        print(f"[smoke] FAIL — web-research MCP server unreachable: {exc}")
+        return False
+    finally:
+        await client.aclose()
+
+    missing = {"tavily_search", "url_scraper"} - names
+    if missing:
+        print(f"[smoke] FAIL — MCP server missing tools: {sorted(missing)}")
+        return False
+
+    print(f"[smoke] mcp: web-research OK, tools={sorted(names)}")
+    return True
+
+
 async def main() -> int:
     print(f"[smoke] query: {QUERY}")
+
+    if not await _check_mcp_server():
+        return 1
 
     state = new_job_state(
         job_id="smoke", query=QUERY, hyde_enabled=True, sf_threshold=0.15
