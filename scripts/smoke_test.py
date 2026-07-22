@@ -36,11 +36,8 @@ QUERY = "How does chain of thought reasoning improve language model performance?
 async def _check_mcp_server() -> bool:
     """Verify the web-research MCP server is reachable and advertises its tools.
 
-    Worth its own check rather than trusting the end-to-end run: web_agent_node
-    fails open to an in-process Tavily call, so a missing or broken server
-    produces a perfectly green pipeline with a component silently bypassed.
-    This is the check that catches, for instance, mcp_servers/ not being COPYed
-    into the image.
+    Needs its own check: web_agent_node fails open to an in-process call, so a
+    missing server otherwise yields a green pipeline with the component bypassed.
     """
     from rag.mcp_client import WebResearchMCPClient
 

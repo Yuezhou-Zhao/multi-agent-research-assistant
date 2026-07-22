@@ -76,10 +76,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # docker-compose since it's regenerable, not baked in.
 COPY backend/ ./backend/
 COPY rag/ ./rag/
-# Required, not optional: rag/mcp_client.py spawns `python -m
-# mcp_servers.web_research` as a subprocess. Omit this and the web agent
-# silently falls back to its in-process path on every query — degraded but
-# green, which is the worst way to lose a component.
+# Required: rag/mcp_client.py spawns `python -m mcp_servers.web_research`.
+# Omit it and the web agent silently falls back in-process on every query.
 COPY mcp_servers/ ./mcp_servers/
 COPY evaluation/ ./evaluation/
 COPY frontend/ ./frontend/

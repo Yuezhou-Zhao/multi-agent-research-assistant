@@ -1,21 +1,13 @@
 """Measure what the MCP boundary costs per tool call.
 
-The Web sub-agent's tool set moved out of the process and behind the
-protocol (see mcp_servers/web_research.py). That buys decoupling and
-runtime tool discovery; it is not free. This measures the bill.
+Calls the same stubbed tool body two ways — in-process, and through the
+real WebResearchMCPClient over stdio — and compares. The stub keeps the
+figure to transport + JSON-RPC + dispatch; live Tavily latency (~100-500 ms)
+would bury a single-digit-millisecond effect.
 
-Method: call the same stubbed tool body two ways — once in-process, once
-through the real WebResearchMCPClient over stdio to a subprocess — and
-compare distributions. The stub (scripts/bench_mcp_stub_server.py) exists
-so the number reflects transport + JSON-RPC + dispatch rather than
-Tavily's network latency, which is ~100-500 ms and would bury a
-single-digit-millisecond effect.
+Subprocess spawn and handshake are reported separately, not per call: the
+client is a process-wide singleton.
 
-The subprocess spawn and MCP handshake are excluded from the per-call
-figures on purpose: the client is a process-wide singleton, so that cost
-is paid once per process, not once per query. It is reported separately.
-
-Run:
     python -m scripts.bench_mcp_overhead [--calls N]
 """
 import argparse
@@ -24,13 +16,12 @@ import os
 import statistics
 import time
 
-# The server subprocess inherits this process's stderr and logs one line per
-# CallToolRequest at INFO. Quiet it before the client spawns anything, or the
-# results table arrives buried under a few hundred log lines.
+# The server subprocess inherits this process's stderr and logs every
+# CallToolRequest at INFO. Quiet it before the client spawns anything.
 os.environ.setdefault("FASTMCP_LOG_LEVEL", "WARNING")
 
 from rag.mcp_client import WebResearchMCPClient  # noqa: E402
-from scripts.bench_mcp_stub_server import _stub_tavily_search
+from scripts.bench_mcp_stub_server import _stub_tavily_search  # noqa: E402
 
 QUERY = "how does chain-of-thought prompting work?"
 
@@ -72,10 +63,9 @@ async def main(calls: int, warmup: int = 5) -> None:
     client = WebResearchMCPClient(server_module="scripts.bench_mcp_stub_server")
     try:
         connect_start = time.perf_counter()
-        await client.tool_names()  # spawns the subprocess + handshake + list_tools
+        await client.tool_names()  # spawn + handshake + list_tools
         connect_ms = (time.perf_counter() - connect_start) * 1000
 
-        # Warm up both paths so neither pays import or first-call costs.
         await _time_in_process(warmup)
         await _time_over_mcp(client, warmup)
 

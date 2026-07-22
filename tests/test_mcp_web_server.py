@@ -1,14 +1,9 @@
 """Tests for the web-research MCP server and its client.
 
-Runs keyless: TAVILY_API_KEY is never needed, because every test that
-exercises a tool body patches the underlying rag.tools call. That keeps
-these tests runnable in CI, which installs no API keys.
-
-Most tests connect client and server in-process via
-create_connected_server_and_client_session — real protocol traffic, no
-subprocess. One test deliberately does spawn the real subprocess, to
-prove the module is actually launchable as a server and that discovery
-works end to end; it only lists tools, so it stays keyless too.
+Keyless: every test that exercises a tool body patches the underlying
+rag.tools call, so CI needs no API keys. Most connect client and server
+in-process (real protocol traffic, no subprocess); one spawns the real
+subprocess to prove the module is launchable.
 """
 import pytest
 from mcp.shared.memory import create_connected_server_and_client_session
@@ -40,8 +35,7 @@ class TestToolDiscovery:
 
     @pytest.mark.asyncio
     async def test_tools_carry_descriptions_and_input_schemas(self):
-        """Docstrings and type hints become the protocol-level contract —
-        this is what makes the tools discoverable rather than merely callable."""
+        """Docstrings and type hints are the protocol-level contract."""
         async with create_connected_server_and_client_session(
             web_research_mcp_server._mcp_server
         ) as session:
@@ -112,7 +106,7 @@ class TestToolInvocation:
 
     @pytest.mark.asyncio
     async def test_tool_exception_is_reported_as_protocol_error(self, monkeypatch):
-        """A failure inside the tool must not look like a successful empty result."""
+        """A tool failure must not look like a successful empty result."""
 
         async def _boom(query, max_results=5):
             raise RuntimeError("TAVILY_API_KEY is not set")
@@ -129,12 +123,7 @@ class TestToolInvocation:
 
 
 class TestWebAgentDegradation:
-    """Adding the MCP boundary must not make web_agent_node less reliable.
-
-    These pin the layering: MCP first, in-process fallback second, empty
-    web_chunks last — the same degraded-but-valid state the node produced
-    before the tool set moved behind the protocol.
-    """
+    """Pins the layering: MCP -> in-process fallback -> empty web_chunks."""
 
     @staticmethod
     def _state():
@@ -196,7 +185,7 @@ class TestWebAgentDegradation:
 
 
 class TestClientOverRealSubprocess:
-    """Proves mcp_servers.web_research is genuinely launchable as a server."""
+    """Proves mcp_servers.web_research is launchable as a real server."""
 
     @pytest.mark.asyncio
     async def test_client_discovers_tools_over_stdio(self):
